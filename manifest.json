@@ -1,0 +1,33 @@
+{
+  "name": "ComeAhorro - Sabores de México",
+  "short_name": "ComeAhorro",
+  "description": "Recetario mexicano variado, económico y con filtro de salud digestiva y vesícula-friendly. Sin cuentas ni registros.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F5F6FA",
+  "theme_color": "#E60012",
+  "icons": [
+    {
+      "src": "assets/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["food", "lifestyle", "health"],
+  "lang": "es-MX"
+}

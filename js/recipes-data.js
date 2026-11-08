@@ -1,0 +1,831 @@
+/**
+ * Base de datos de Recetas Tradicionales Mexicanas
+ * Con análisis para salud vesicular, gastrointestinal, tiempos de caducidad y costos.
+ * 100% libre de base de datos externa / funciona offline.
+ */
+
+const RECIPES_DATA = [
+  // ==========================================
+  // DESAYUNOS
+  // ==========================================
+  {
+    id: "des-01",
+    name: "Enfrijoladas Oaxaqueñas con Queso Panela",
+    region: "Oaxaca (Valles Centrales)",
+    mealType: "desayuno",
+    prepDifficulty: "Muy Fácil",
+    prepDifficultyLevel: 1,
+    ingredientsAvailability: "Ingredientes comunes en casa",
+    fridgeLife: "3 a 4 días (conservar salsa de frijol en tupper hermético)",
+    approxCost: "$ Económico (~$25 - $35 MXN por porción)",
+    costLevel: 1,
+    cookingTime: "20 min",
+    servings: "3 personas (6-8 tortillas)",
+    calories: "~320 kcal por ración",
+    vesiculaFriendly: true,
+    vesiculaStatus: "Excelente / Seguro",
+    vesiculaTips: "Cocinar los frijoles en olla con cebolla y epazote sin manteca ni freír. Usar queso panela fresco (bajo en grasa) en lugar de queso añejo o crema entera. No estimula la vesícula.",
+    colorTheme: "from-amber-600 to-amber-900",
+    emoji: "🫘",
+    description: "Tortillas de maíz recién pasadas por comal, bañadas en un suave caldillo de frijol negro aromatizado con hoja de aguacate o epazote, coronadas con panela fresca.",
+    ingredients: [
+      "2 tazas de frijoles negros cocidos de la olla con su caldo",
+      "1 hoja de aguacate seca o una ramita de epazote",
+      "1/4 de cebolla blanca",
+      "1 diente de ajo",
+      "6 tortillas de maíz de tortillería",
+      "150 g de queso panela cortado en cubitos o desmoronado",
+      "1/2 taza de cebolla morada picada fino",
+      "Unas ramitas de cilantro fresco lavado"
+    ],
+    instructions: [
+      "Licúa los frijoles cocidos con su caldo, la cebolla, el ajo y la hoja de aguacate o epazote hasta lograr una textura aterciopelada y ligera.",
+      "Vierte la salsa de frijol en una ollita a fuego medio sin agregar aceite ni manteca. Deja que hierva suavemente durante 5 minutos para que se integren los sabores.",
+      "Calienta las tortillas de maíz en el comal hasta que estén suaves y flexibles.",
+      "Pasa cada tortilla por la salsa caliente asegurando que quede bien bañada y dóblala en un plato formando triángulos o rollitos.",
+      "Baña con un cucharón extra de salsa caliente y decora por encima con el queso panela fresco, cebolla morada y cilantro fresco al gusto."
+    ],
+    tags: ["desayuno", "oaxaca", "economico", "vesicula-friendly", "rapido"]
+  },
+  {
+    id: "des-02",
+    name: "Huevos a la Mexicana al Comal sin Grasa",
+    region: "Centro de México (CDMX / Edomex)",
+    mealType: "desayuno",
+    prepDifficulty: "Muy Fácil",
+    prepDifficultyLevel: 1,
+    ingredientsAvailability: "En cualquier tiendita",
+    fridgeLife: "1 a 2 días (se disfruta mejor recién hecho)",
+    approxCost: "$ Económico (~$20 - $28 MXN por porción)",
+    costLevel: 1,
+    cookingTime: "12 min",
+    servings: "2 personas",
+    calories: "~210 kcal por ración",
+    vesiculaFriendly: true,
+    vesiculaStatus: "Excelente / Seguro",
+    vesiculaTips: "Se utiliza solo una gota de aceite en sartén de teflón o rocío vegetal. Si estás en fase aguda de dolor de vesícula, usa 1 huevo entero + 2 claras para reducir el colesterol de la yema.",
+    colorTheme: "from-red-500 to-emerald-600",
+    emoji: "🍳",
+    description: "El desayuno patriótico mexicano: jitomate rojo jugoso, cebolla blanca y toque sutil de chile serrano desvenado, cocinados a fuego suave con huevos frescos.",
+    ingredients: [
+      "3 huevos enteros (o 1 huevo + 3 claras si tienes dolor vesicular activo)",
+      "2 jitomates guajes maduros picados en cubitos",
+      "1/4 de cebolla blanca picada",
+      "1/2 chile serrano desvenado y sin semillas (o pimiento verde si evitas picante)",
+      "1 cucharadita pequeña de aceite vegetal (o spray antiadherente)",
+      "Sal y pimienta al gusto",
+      "Tortillas de maíz calientes para acompañar"
+    ],
+    instructions: [
+      "Pica el jitomate, la cebolla y el chile en cubitos parejos.",
+      "En una sartén antiadherente a fuego medio con apenas una gota de aceite distribuida con servilleta, sofríe la cebolla durante 2 minutos hasta que esté transparente.",
+      "Agrega el jitomate picado y el chile serrano desvenado. Cocina durante 4 minutos hasta que el jitomate suelte su jugo natural.",
+      "Bate los huevos con una pizca de sal en un tazón pequeño y viértelos sobre las verduras guisadas.",
+      "Mueve suavemente con una pala de madera a fuego bajo hasta que el huevo esté cuajado pero tierno. Sirve inmediatamente con tortillas calientes."
+    ],
+    tags: ["desayuno", "centro", "economico", "vesicula-friendly", "rapido"]
+  },
+  {
+    id: "des-03",
+    name: "Tlacoyos de Haba con Ensalada de Nopalitos",
+    region: "Hidalgo y Tlaxcala",
+    mealType: "desayuno",
+    prepDifficulty: "Fácil",
+    prepDifficultyLevel: 2,
+    ingredientsAvailability: "Mercado local / Tortillería",
+    fridgeLife: "4 a 5 días los tlacoyos refrigerados",
+    approxCost: "$ Económico (~$25 - $35 MXN por porción)",
+    costLevel: 1,
+    cookingTime: "25 min",
+    servings: "3 personas (6 tlacoyos)",
+    calories: "~290 kcal por ración",
+    vesiculaFriendly: true,
+    vesiculaStatus: "Excelente / Seguro",
+    vesiculaTips: "100% asado al comal sin freír. Los nopales aportan fibra soluble que atrapa el exceso de bilis y colesterol en el tracto digestivo, siendo un aliado estrella para la vesícula.",
+    colorTheme: "from-emerald-600 to-teal-800",
+    emoji: "🫓",
+    description: "Masa de maíz azul o blanco rellena de puré de haba amarilla con hierbabuena, asada en comal y coronada con nopales tiernos y queso fresco.",
+    ingredients: [
+      "6 tlacoyos crudos o precocidos de haba o frijol (de comal, no fritos)",
+      "3 tazas de nopales cocidos picados en tiritas",
+      "1 jitomate grande en cubitos",
+      "1/4 de cebolla picada fina",
+      "Unas ramitas de cilantro picado",
+      "1 pizca de orégano seco mexicano",
+      "80 g de queso canasto o panela desmoronado",
+      "Gotas de limón y sal"
+    ],
+    instructions: [
+      "Prepara la ensalada: en un tazón mezcla los nopales cocidos fríos con el jitomate, la cebolla, el cilantro, orégano, pizca de sal y unas gotas de limón.",
+      "Pon a calentar un comal a fuego medio-alto.",
+      "Asa los tlacoyos por ambos lados de 3 a 4 minutos por lado hasta que la masa esté bien cocida y crujiente por fuera pero suave por dentro.",
+      "Coloca dos tlacoyos calientes por plato, cubre con abundante ensalada fresca de nopales y espolvorea queso panela."
+    ],
+    tags: ["desayuno", "hidalgo", "tlaxcala", "vesicula-friendly", "fibra", "sin-grasa"]
+  },
+  {
+    id: "des-04",
+    name: "Machaca Norteña Magra con Jitomate y Orégano",
+    region: "Nuevo León y Sonora",
+    mealType: "desayuno",
+    prepDifficulty: "Fácil",
+    prepDifficultyLevel: 2,
+    ingredientsAvailability: "Mercado local o carnicería",
+    fridgeLife: "3 días en refrigeración",
+    approxCost: "$$ Moderado (~$55 - $75 MXN por porción)",
+    costLevel: 2,
+    cookingTime: "15 min",
+    servings: "2 personas",
+    calories: "~340 kcal por ración",
+    vesiculaFriendly: "adaptable",
+    vesiculaStatus: "Moderado con adaptación",
+    vesiculaTips: "La carne seca de res tradicional norteña es muy magra y casi no contiene grasa. Se cocina solo con los jugos del jitomate sin manteca. Omitir chiles toreados si hay inflamación.",
+    colorTheme: "from-stone-600 to-amber-700",
+    emoji: "🥩",
+    description: "Carne seca de res deshebrada artesanal, salteada con verduras frescas y sazonada con un toque de orégano de la sierra.",
+    ingredients: [
+      "120 g de machaca de res magra deshebrada de buena calidad",
+      "2 jitomates medianos picados",
+      "1/3 de cebolla blanca picada",
+      "1/2 pimiento verde picado (o chile jalapeño desvenado)",
+      "1/2 cucharadita de aceite de oliva ligero",
+      "1 pizca de orégano seco",
+      "2 huevos batidos (opcional)"
+    ],
+    instructions: [
+      "En una sartén antiadherente con media cucharadita de aceite, saltea la cebolla y el pimiento durante 2 minutos.",
+      "Agrega el jitomate picado y deja que empiece a soltar sus jugos.",
+      "Incorpora la machaca deshebrada. El jugo del jitomate hidratará la carne seca y liberará todo su aroma.",
+      "Si deseas, agrega los huevos batidos y revuelve a fuego lento hasta integrar.",
+      "Finaliza con una pizca de orégano frotado entre las manos y sirve con tortillas de maíz."
+    ],
+    tags: ["desayuno", "norte", "proteina", "nuevo-leon", "sonora"]
+  },
+  {
+    id: "des-05",
+    name: "Chilaquiles al Horno en Salsa Verde Asada (Sin Freír)",
+    region: "Jalisco / Bajío",
+    mealType: "desayuno",
+    prepDifficulty: "Media",
+    prepDifficultyLevel: 2,
+    ingredientsAvailability: "En cualquier tiendita",
+    fridgeLife: "2 a 3 días (guardar totopos y salsa por separado)",
+    approxCost: "$ Económico (~$30 - $40 MXN por porción)",
+    costLevel: 1,
+    cookingTime: "25 min",
+    servings: "3 personas",
+    calories: "~310 kcal por ración",
+    vesiculaFriendly: true,
+    vesiculaStatus: "Excelente / Seguro",
+    vesiculaTips: "Los totopos se hornean o se tuestan al comal sin una gota de grasa, eliminando el exceso de aceite que suele desencadenar dolor de vesícula en los chilaquiles convencionales.",
+    colorTheme: "from-green-600 to-lime-600",
+    emoji: "🥗",
+    description: "Totopos crujientes de maíz hechos al comal o air-fryer, ahogados en salsa verde asada de tomatillo con epazote, pechuga de pollo deshebrada y queso panela.",
+    ingredients: [
+      "8 tortillas de maíz del día anterior cortadas en triángulos",
+      "1/2 kg de tomatillos verdes limpios",
+      "1/4 de cebolla",
+      "1 diente de ajo",
+      "1 ramita de epazote fresco",
+      "1 taza de pechuga de pollo cocida y deshebrada",
+      "80 g de queso panela rallado",
+      "Cebolla en rodajas y cilantro para servir"
+    ],
+    instructions: [
+      "Coloca los triángulos de tortilla en una charola para hornear a 180°C durante 12-15 minutos (o en comal/air-fryer) hasta que estén completamente crujientes y dorados sin aceite.",
+      "Asa en un comal los tomatillos, la cebolla y el ajo hasta que tomen tono dorado sin quemarse.",
+      "Licúa los tomatillos asados con ajo, cebolla y una pizca de sal.",
+      "Hierve la salsa en una ollita con la ramita de epazote durante 5 minutos para concentrar sabor.",
+      "Para servir: coloca los totopos en un tazón hondo, báñalos con la salsa bien caliente, añade la pechuga de pollo y corona con panela fresca y cebolla."
+    ],
+    tags: ["desayuno", "jalisco", "bajio", "sin-grasa", "vesicula-friendly"]
+  },
+
+  // ==========================================
+  // COMIDAS (ALMUERZOS PRINCIPALES)
+  // ==========================================
+  {
+    id: "com-01",
+    name: "Pescado a la Veracruzana Ligero",
+    region: "Veracruz (Costa del Golfo)",
+    mealType: "comida",
+    prepDifficulty: "Fácil",
+    prepDifficultyLevel: 2,
+    ingredientsAvailability: "Mercado local / Supermercado",
+    fridgeLife: "2 a 3 días bien cerrado en tupper de vidrio",
+    approxCost: "$$ Moderado (~$65 - $85 MXN por porción)",
+    costLevel: 2,
+    cookingTime: "30 min",
+    servings: "4 porciones",
+    calories: "~280 kcal por ración",
+    vesiculaFriendly: true,
+    vesiculaStatus: "Excelente / Seguro",
+    vesiculaTips: "El pescado blanco (robalo, tilapia, mojarra o merluza) tiene un contenido graso casi nulo. La cocción es pochada en el caldillo de jitomate. Se modera la cantidad de aceitunas para cuidar el sodio.",
+    colorTheme: "from-red-600 to-amber-500",
+    emoji: "🐟",
+    description: "Filetes de pescado blanco cocinados suavemente en un caldillo de jitomate sazonado con alcaparras, pimiento, aceitunas y hierbas de olor veracruzanas.",
+    ingredients: [
+      "4 filetes de pescado blanco limpios (tilapia, robalo o huachinango)",
+      "4 jitomates maduros asados y licuados",
+      "1/2 cebolla picada en juliana",
+      "2 dientes de ajo finamente picados",
+      "1 pimiento morrón amarillo o rojo cortado en tiras",
+      "10 aceitunas verdes picadas (enjuagadas para reducir sal)",
+      "1 cucharada de alcaparras",
+      "2 hojas de laurel seco y 1 pizca de orégano",
+      "1 cucharadita de aceite de oliva virgen"
+    ],
+    instructions: [
+      "En una cacerola ancha con la cucharadita de aceite de oliva, sofríe la cebolla, el ajo y el pimiento morrón durante 3 minutos.",
+      "Vierte el puré de jitomate colado, las hojas de laurel y el orégano. Tapa y deja hervir a fuego medio por 8 minutos hasta que tome un color rojo vivo.",
+      "Añade las alcaparras y las aceitunas picadas.",
+      "Sazona los filetes de pescado con una pizca de sal y colócalos delicadamente dentro de la salsa hirviendo.",
+      "Baña los filetes con la salsa, tapa la cacerola y deja cocinar a fuego lento durante 8 a 10 minutos hasta que el pescado esté firme y tierno. Acompaña con arroz blanco al vapor."
+    ],
+    tags: ["comida", "veracruz", "pescado", "vesicula-friendly", "costa"]
+  },
+  {
+    id: "com-02",
+    name: "Caldo Tlalpeño Desgrasado con Pollo y Garbanzo",
+    region: "Centro de México (Tlapan / CDMX)",
+    mealType: "comida",
+    prepDifficulty: "Fácil",
+    prepDifficultyLevel: 2,
+    ingredientsAvailability: "En cualquier tiendita o mercado",
+    fridgeLife: "4 a 5 días (el caldo se conserva de maravilla)",
+    approxCost: "$ Económico (~$35 - $48 MXN por porción)",
+    costLevel: 1,
+    cookingTime: "35 min",
+    servings: "4 porciones generosas",
+    calories: "~310 kcal por ración",
+    vesiculaFriendly: true,
+    vesiculaStatus: "Excelente / Seguro",
+    vesiculaTips: "Se prepara con pechuga de pollo sin piel y se desgrasa completamente al hervir. El epazote tiene propiedades carminativas que alivian gases estomacales y espasmos.",
+    colorTheme: "from-amber-500 to-orange-700",
+    emoji: "🍲",
+    description: "Reconfortante caldo tradicional con pechuga de pollo deshebrada, garbanzos cocidos, calabacita, zanahoria y el inconfundible aroma del epazote silvestre.",
+    ingredients: [
+      "1 pechuga de pollo entera sin piel ni hueso",
+      "1 taza de garbanzos previamente cocidos",
+      "2 zanahorias cortadas en medias lunas",
+      "2 calabacitas tiernas en cubos",
+      "1 ramita generosa de epazote fresco",
+      "2 jitomates licuados con 1/4 cebolla y 1 diente de ajo",
+      "1 pizca de chile chipotle seco sólo para aromatizar el caldo (opcional y suave)",
+      "Limón y una rebanada delgada de aguacate para coronar"
+    ],
+    instructions: [
+      "En una olla con 1.5 litros de agua, cuece la pechuga de pollo con media cebolla y sal durante 20 minutos. Retira la espuma que suba a la superficie.",
+      "Retira la pechuga, deshébrala y reserva el caldo.",
+      "Cuela el puré de jitomate y agrégalo directo al caldo caliente junto con el epazote.",
+      "Añade las zanahorias y los garbanzos cocidos. Deja hervir durante 8 minutos.",
+      "Agrega las calabacitas y el pollo deshebrado. Cocina por 5 minutos más hasta que la verdura esté al dente.",
+      "Sirve bien caliente con gotas de limón y un toque fresco de cilantro."
+    ],
+    tags: ["comida", "centro", "caldos", "vesicula-friendly", "economico"]
+  },
+  {
+    id: "com-03",
+    name: "Mixiote Casero de Pollo con Nopales y Guajillo",
+    region: "Hidalgo y Puebla",
+    mealType: "comida",
+    prepDifficulty: "Media",
+    prepDifficultyLevel: 2,
+    ingredientsAvailability: "Mercado local",
+    fridgeLife: "4 días refrigerado",
+    approxCost: "$$ Accesible (~$45 - $60 MXN por porción)",
+    costLevel: 2,
+    cookingTime: "45 min",
+    servings: "4 porciones",
+    calories: "~260 kcal por ración",
+    vesiculaFriendly: true,
+    vesiculaStatus: "Excelente / Seguro",
+    vesiculaTips: "El método de cocción al vapor dentro de papel encerado o aluminio no requiere ni una sola gota de grasa o aceite. El chile guajillo aporta sabor dulce y profundo sin irritar como el habanero.",
+    colorTheme: "from-red-700 to-rose-900",
+    emoji: "🍗",
+    description: "Piezas de pollo maceradas en adobo aromático de guajillo, orégano y comino, envueltas en paquetitos con nopales frescos y cocinadas al vapor.",
+    ingredients: [
+      "4 piezas de pechuga de pollo limpias sin piel",
+      "4 chiles guajillo desvenados, suavizados en agua tibia",
+      "2 dientes de ajo",
+      "1/4 de cebolla",
+      "1 clavo de olor y 1 pizca de comino molido",
+      "1 cucharada de vinagre blanco o de manzana",
+      "2 tazas de nopales tiernos picados crudos",
+      "4 hojas de aguacate o laurel",
+      "Papel aluminio o papel encerado para envolver"
+    ],
+    instructions: [
+      "Licúa los chiles guajillo remojados con el ajo, cebolla, clavo, comino, vinagre y una pizca de sal con media taza del agua de remojo, hasta tener un adobo espeso y liso.",
+      "Cuela el adobo sobre el pollo y deja marinar al menos 15 minutos.",
+      "Extiende cuatro hojas de papel aluminio. En el centro de cada una coloca una cama de nopales crudos, una pieza de pollo con abundante adobo y una hoja de aguacate o laurel.",
+      "Cierra los paquetitos sellando muy bien las orillas para que no escape el vapor.",
+      "Coloca los paquetes en una vaporera con agua hirviendo. Tapa y cocina a fuego medio durante 40 a 45 minutos. Abre el paquete en la mesa para disfrutar el aroma."
+    ],
+    tags: ["comida", "hidalgo", "puebla", "vapor", "vesicula-friendly"]
+  },
+  {
+    id: "com-04",
+    name: "Tinga de Pollo Poblana Tradicional Ligera",
+    region: "Puebla",
+    mealType: "comida",
+    prepDifficulty: "Fácil",
+    prepDifficultyLevel: 2,
+    ingredientsAvailability: "En cualquier tiendita",
+    fridgeLife: "4 a 5 días en tupper hermético",
+    approxCost: "$ Económico (~$30 - $42 MXN por porción)",
+    costLevel: 1,
+    cookingTime: "30 min",
+    servings: "4 a 5 porciones",
+    calories: "~230 kcal por ración (sin tortilla)",
+    vesiculaFriendly: true,
+    vesiculaStatus: "Excelente / Seguro",
+    vesiculaTips: "A diferencia de las recetas donde se usa manteca de cerdo, aquí la cebolla se acitrona en su propio vapor y el caldillo es a base de jitomate cocido con orégano. Muy ligero y saciante.",
+    colorTheme: "from-red-500 to-amber-600",
+    emoji: "🌮",
+    description: "Pechuga de pollo cocida y deshebrada, bañada en caldillo de jitomate con orégano mexicano y abundante cebolla acitronada.",
+    ingredients: [
+      "500 g de pechuga de pollo cocida y deshebrada",
+      "4 jitomates guajes maduros",
+      "1 cebolla blanca grande rebanada en pluma (juliana)",
+      "1 diente de ajo",
+      "1/2 cucharadita de orégano seco",
+      "1/2 chile chipotle de lata (opcional; omitir si tienes cólico agudo)",
+      "1/2 taza de caldo donde se coció el pollo",
+      "Tostadas de maíz horneadas al comal para servir"
+    ],
+    instructions: [
+      "Cuece los jitomates en agua hirviendo durante 5 minutos y licúalos con el ajo, el orégano y un toque mínimo de chipotle con un chorrito de caldo de pollo.",
+      "En una sartén antiadherente caliente con unas gotas de aceite vegetal o spray, saltea la cebolla rebanada a fuego medio hasta que se vea transparente y dulce (unos 6 minutos).",
+      "Vierte el caldillo colado de jitomate sobre la cebolla y deja que hierva durante 5 minutos para que espese.",
+      "Incorpora el pollo deshebrado, revuelve bien para que absorba el caldillo y baja el fuego.",
+      "Tapa y cocina por 10 minutos a fuego suave. Sirve sobre tostadas horneadas con lechuga fresca finamente picada."
+    ],
+    tags: ["comida", "puebla", "tinga", "economico", "vesicula-friendly"]
+  },
+  {
+    id: "com-05",
+    name: "Calabacitas Tiernas con Elote y Pollo al Vapor",
+    region: "Michoacán / Bajío",
+    mealType: "comida",
+    prepDifficulty: "Muy Fácil",
+    prepDifficultyLevel: 1,
+    ingredientsAvailability: "En cualquier tiendita o verdulería",
+    fridgeLife: "3 a 4 días en refrigerador",
+    approxCost: "$ Económico (~$28 - $38 MXN por porción)",
+    costLevel: 1,
+    cookingTime: "25 min",
+    servings: "4 porciones",
+    calories: "~240 kcal por ración",
+    vesiculaFriendly: true,
+    vesiculaStatus: "Excelente / Seguro",
+    vesiculaTips: "Platillo insignia de la cocina casera michoacana. Las calabacitas y el elote son vegetales de fácil vaciamiento gástrico que no sobrecargan la bilis.",
+    colorTheme: "from-lime-600 to-emerald-700",
+    emoji: "🌽",
+    description: "Guiso tradicional de calabacitas criollas picadas, granos de elote tierno, jitomate, cebolla y trozos de pechuga de pollo cocidos en su propio jugo.",
+    ingredients: [
+      "4 calabacitas medianas picadas en cubos",
+      "2 elotes tiernos desgranados (o 1 taza de granos de elote cocidos)",
+      "300 g de pechuga de pollo cortada en cubitos",
+      "2 jitomates medianos picados en cubitos",
+      "1/2 cebolla picada",
+      "1 diente de ajo picado fino",
+      "1 ramita de epazote fresco",
+      "Sal marina al gusto"
+    ],
+    instructions: [
+      "En una cacerola con tapa a fuego medio, coloca la cebolla y el ajo con una cucharadita mínima de aceite o caldo.",
+      "Agrega los cubitos de pollo y sella durante 4 minutos.",
+      "Añade el jitomate picado y los granos de elote tierno. Mezcla bien.",
+      "Agrega las calabacitas picadas, la ramita de epazote y sazona con sal.",
+      "Baja el fuego al mínimo, tapa la cacerola y deja cocinar durante 15 minutos sin abrir. El agua de las calabacitas creará un caldillo delicioso y natural."
+    ],
+    tags: ["comida", "michoacan", "verduras", "vesicula-friendly", "economico"]
+  },
+  {
+    id: "com-06",
+    name: "Pescado Tikin Xic Maya al Horno",
+    region: "Yucatán (Riviera Maya)",
+    mealType: "comida",
+    prepDifficulty: "Fácil",
+    prepDifficultyLevel: 2,
+    ingredientsAvailability: "Mercado local / Recaudería",
+    fridgeLife: "2 días bien sellado",
+    approxCost: "$$ Moderado (~$60 - $80 MXN por porción)",
+    costLevel: 2,
+    cookingTime: "30 min",
+    servings: "4 porciones",
+    calories: "~270 kcal por ración",
+    vesiculaFriendly: true,
+    vesiculaStatus: "Excelente / Seguro",
+    vesiculaTips: "A diferencia de la cochinita pibil tradicional que tiene grasa de cerdo y manteca, el Tikin Xic utiliza filete magro de pescado horneado en hoja de plátano con achiote y naranja agria. Cero irritación vesicular.",
+    colorTheme: "from-amber-500 to-red-600",
+    emoji: "🌴",
+    description: "Receta ancestral yucateca de pescado marinado en pasta de achiote, orégano de monte y jugo de naranja agria, asado u horneado con rodajas de cebolla y jitomate.",
+    ingredients: [
+      "4 filetes gruesos de pescado blanco (mero o huachinango)",
+      "40 g de pasta de achiote artesanal",
+      "1/2 taza de jugo de naranja agria (o mitad jugo de naranja dulce y mitad jugo de limón)",
+      "1/2 cebolla morada rebanada",
+      "1 jitomate rebanado en rodajas",
+      "1 pizca de orégano yucateco",
+      "1 hoja de plátano asada para suavizar (opcional, o papel para hornear)"
+    ],
+    instructions: [
+      "Disuelve la pasta de achiote con el jugo de naranja agria, una pizca de orégano y sal hasta tener una salsa homogénea.",
+      "Unta los filetes de pescado con la mezcla de achiote por ambos lados y deja reposar 10 minutos.",
+      "En una fuente para horno cubierta con hoja de plátano o papel para hornear, acomoda los filetes.",
+      "Coloca rodajas de jitomate y cebolla morada sobre cada filete.",
+      "Envuelve con la hoja de plátano y hornea a 190°C durante 20 minutos (o cocínalo tapado en un sartén/comal). Sirve con arroz blanco."
+    ],
+    tags: ["comida", "yucatan", "pescado", "vesicula-friendly", "ancestral"]
+  },
+  {
+    id: "com-07",
+    name: "Carne en su Jugo Tapatía Versión Ligera",
+    region: "Jalisco (Guadalajara)",
+    mealType: "comida",
+    prepDifficulty: "Media",
+    prepDifficultyLevel: 2,
+    ingredientsAvailability: "En cualquier tiendita y carnicería",
+    fridgeLife: "3 a 4 días en refrigerador",
+    approxCost: "$$ Moderado (~$55 - $70 MXN por porción)",
+    costLevel: 2,
+    cookingTime: "35 min",
+    servings: "4 porciones",
+    calories: "~360 kcal por ración",
+    vesiculaFriendly: "adaptable",
+    vesiculaStatus: "Moderado con adaptación",
+    vesiculaTips: "Adaptación saludable: se elimina el tocino y la grasa de fritura tradicional. Se utiliza corte magro de res (falda o bola limpia) y se cuece en caldo verde de tomatillo con frijoles enteros de la olla.",
+    colorTheme: "from-emerald-700 to-amber-800",
+    emoji: "🥣",
+    description: "Cortes delgados de pulpa de res cocidos en su propio jugo con un caldillo aromático de tomatillos verdes asados, cilantro y frijoles bayos enteros de la olla.",
+    ingredients: [
+      "400 g de pulpa de res magra cortada en cubitos o tiritas muy finas",
+      "2 tazas de frijoles de la olla cocidos con caldo (sin freír)",
+      "6 tomatillos verdes cocidos",
+      "1/4 de cebolla",
+      "1 diente de ajo",
+      "1 manojo pequeño de cilantro fresco",
+      "Cebollitas cambray asadas al comal para acompañar",
+      "Limón y sal al gusto"
+    ],
+    instructions: [
+      "Licúa los tomatillos cocidos con la cebolla, el ajo, el cilantro y 1 taza de caldo de frijol hasta obtener una salsa verde ligera.",
+      "En una cacerola caliente a fuego medio, cocina las tiritas de carne de res magra sazonadas con sal. Deja que la carne suelte su jugo natural y cambie de color sin quemarse.",
+      "Vierte la salsa verde licuada sobre la carne y deja hervir a fuego medio durante 15 minutos hasta que la carne esté muy suave.",
+      "Agrega los frijoles de la olla con su caldo y deja que todo hierva junto por 5 minutos más.",
+      "Sirve en platos hondos acompañado de cebollitas cambray asadas al comal y unas gotas de limón."
+    ],
+    tags: ["comida", "jalisco", "carne", "adaptable"]
+  },
+  {
+    id: "com-08",
+    name: "Pozole Verde Guerrerense de Pollo Ligero",
+    region: "Guerrero (Tixtla / Acapulco)",
+    mealType: "comida",
+    prepDifficulty: "Elaborada",
+    prepDifficultyLevel: 3,
+    ingredientsAvailability: "Mercado local",
+    fridgeLife: "4 a 5 días refrigerado (el pozole sabe aún mejor al día siguiente)",
+    approxCost: "$$ Accesible (~$40 - $55 MXN por porción)",
+    costLevel: 2,
+    cookingTime: "50 min",
+    servings: "6 porciones generosas",
+    calories: "~330 kcal por ración",
+    vesiculaFriendly: true,
+    vesiculaStatus: "Excelente / Seguro",
+    vesiculaTips: "Se prepara 100% con pechuga de pollo en lugar de cabeza o espinazo de cerdo. La pipián verde se hace con pepita de calabaza en cantidad moderada y hojas verdes (lechuga, epazote, espinaca).",
+    colorTheme: "from-green-600 to-emerald-900",
+    emoji: "🍲",
+    description: "Auténtico pozole verde de maíz cacahuazintle con pechuga de pollo deshebrada, perfumado con salsa de pepita de calabaza, epazote, tomatillo y orégano.",
+    ingredients: [
+      "500 g de maíz pozolero precocido",
+      "1 pechuga de pollo completa cocida con cebolla y ajo",
+      "6 tomatillos verdes",
+      "3 hojas de lechuga orejona",
+      "1 taza de hojas de espinaca lavadas",
+      "1 ramita de epazote fresco",
+      "2 cucharadas de pepita de calabaza tostada (aporta textura sin exceder grasa)",
+      "Orégano seco, rábanos y lechuga picada para la mesa"
+    ],
+    instructions: [
+      "En una olla grande, hierve el maíz pozolero precocido con el caldo de pollo desgrasado durante 30 minutos hasta que el grano floree por completo.",
+      "Licúa los tomatillos con la lechuga, espinacas, epazote, pepitas de calabaza y un poco de caldo hasta tener un mole verde terso.",
+      "Vierte la salsa verde sobre el maíz hirviendo y cocina a fuego medio durante 15 minutos.",
+      "Agrega la pechuga de pollo cocida y deshebrada, sazona con sal y deja que se incorpore por 5 minutos.",
+      "Sirve en tazones grandes con rábanos en rodajas, lechuga picada y orégano seco espolvoreado."
+    ],
+    tags: ["comida", "guerrero", "pozole", "vesicula-friendly", "fiesta"]
+  },
+
+  // ==========================================
+  // CENAS
+  // ==========================================
+  {
+    id: "cen-01",
+    name: "Sopa de Lentejas Campesina con Nopalitos",
+    region: "Bajío (Guanajuato y Querétaro)",
+    mealType: "cena",
+    prepDifficulty: "Muy Fácil",
+    prepDifficultyLevel: 1,
+    ingredientsAvailability: "Ingredientes comunes en casa",
+    fridgeLife: "4 a 5 días en tupper cerrado",
+    approxCost: "$ Económico (~$20 - $28 MXN por porción)",
+    costLevel: 1,
+    cookingTime: "30 min",
+    servings: "4 porciones",
+    calories: "~210 kcal por ración",
+    vesiculaFriendly: true,
+    vesiculaStatus: "Excelente / Seguro",
+    vesiculaTips: "Cena ideal para la vesícula y el descanso nocturno. Las lentejas aportan hierro y proteína vegetal sin nada de colesterol ni grasas saturadas. Muy reconfortante.",
+    colorTheme: "from-amber-700 to-yellow-800",
+    emoji: "🫕",
+    description: "Sopa reconfortante de lentejas cocinadas con caldillo de jitomate, cebolla, cilantro y cubitos de nopal tierno que le dan una textura única.",
+    ingredients: [
+      "1 taza de lentejas limpias y enjuagadas",
+      "2 nopales medianos cortados en cubitos y cocidos",
+      "2 jitomates maduros licuados con 1/4 de cebolla y 1 ajo",
+      "1 ramita de cilantro fresco",
+      "1 pizca de comino molido",
+      "4 tazas de agua o caldo vegetal",
+      "Sal al gusto"
+    ],
+    instructions: [
+      "En una olla, coloca las lentejas con el agua o caldo y ponlas a hervir a fuego medio.",
+      "Cuela el jitomate licuado y agrégalo directo a la olla junto con la pizca de comino y sal.",
+      "Cocina durante 20 minutos hasta que las lentejas estén suaves y tiernas.",
+      "Agrega los cubitos de nopal cocidos y la ramita de cilantro.",
+      "Deja hervir suavemente 5 minutos más para amalgamar sabores. Sirve calientito con unas gotas de limón si lo deseas."
+    ],
+    tags: ["cena", "bajio", "guanajuato", "leguminosas", "vesicula-friendly", "economico"]
+  },
+  {
+    id: "cen-02",
+    name: "Tostadas Horneadas de Salpicón de Pollo Fresco",
+    region: "Michoacán y Centro",
+    mealType: "cena",
+    prepDifficulty: "Fácil",
+    prepDifficultyLevel: 1,
+    ingredientsAvailability: "En cualquier tiendita",
+    fridgeLife: "3 días en refrigerador",
+    approxCost: "$ Económico (~$25 - $35 MXN por porción)",
+    costLevel: 1,
+    cookingTime: "15 min",
+    servings: "3 personas",
+    calories: "~220 kcal por ración",
+    vesiculaFriendly: true,
+    vesiculaStatus: "Excelente / Seguro",
+    vesiculaTips: "Cero grasas pesadas para la noche. La lechuga romana y el jitomate facilitan la digestión y el pollo cocido aporta proteína magra sin activar espasmos biliares.",
+    colorTheme: "from-emerald-500 to-teal-700",
+    emoji: "🥗",
+    description: "Ensalada fresca tradicional mexicana de pollo deshebrado con lechuga crujiente, jitomate, rábanos y orégano sobre tostadas horneadas al comal.",
+    ingredients: [
+      "2 tazas de pechuga de pollo cocida y deshebrada fría",
+      "3 tazas de lechuga orejona o romana lavada y desinfectada en tiritas",
+      "2 jitomates en medias lunas o cubitos",
+      "4 rábanos limpios en rodajas finas",
+      "1/4 de cebolla morada en pluma fina",
+      "1/2 cucharadita de orégano seco",
+      "1 cucharadita de vinagre de manzana o limón",
+      "Tostadas de maíz horneadas (sin freír)",
+      "50 g de queso panela desmoronado"
+    ],
+    instructions: [
+      "En un tazón grande combina la lechuga, el pollo deshebrado, el jitomate, los rábanos y la cebolla morada.",
+      "Espolvorea el orégano seco, una pizca de sal y las gotas de vinagre o limón.",
+      "Mezcla con cuidado usando dos cucharas para no maltratar los vegetales.",
+      "Sirve una porción generosa sobre tostadas de maíz horneadas y corona con un toque de queso panela fresco."
+    ],
+    tags: ["cena", "fresco", "michoacan", "vesicula-friendly", "rapido"]
+  },
+  {
+    id: "cen-03",
+    name: "Sopa de Flor de Calabaza y Champiñones",
+    region: "Valle de México / Tlaxcala",
+    mealType: "cena",
+    prepDifficulty: "Fácil",
+    prepDifficultyLevel: 1,
+    ingredientsAvailability: "Mercado local / Recaudería",
+    fridgeLife: "2 a 3 días",
+    approxCost: "$ Económico (~$25 - $36 MXN por porción)",
+    costLevel: 1,
+    cookingTime: "20 min",
+    servings: "3 porciones",
+    calories: "~130 kcal por ración",
+    vesiculaFriendly: true,
+    vesiculaStatus: "Excelente / Seguro",
+    vesiculaTips: "Platillo digestivo por excelencia. Las flores de calabaza y los champiñones son prácticamente libres de grasa y sodio, hidratan el cuerpo y desinflaman el colon.",
+    colorTheme: "from-amber-400 to-orange-600",
+    emoji: "🌼",
+    description: "Caldo dorado y perfumado a base de flores frescas de calabaza, champiñones rebanados, granos de elote y epazote tierno.",
+    ingredients: [
+      "2 manojos de flor de calabaza limpios (sin tallo ni pistilo amargo)",
+      "200 g de champiñones frescos limpios en rebanadas",
+      "1/2 taza de granos de elote cocidos",
+      "1/4 de cebolla picada",
+      "1 diente de ajo pequeño",
+      "1 ramita de epazote fresco",
+      "4 tazas de caldo ligero de pollo o verduras",
+      "Sal al gusto"
+    ],
+    instructions: [
+      "En una olla a fuego medio saltea la cebolla picada y el ajo con una cucharadita mínima de aceite hasta acitronar.",
+      "Agrega los champiñones y cocina por 3 minutos hasta que empiecen a sudar.",
+      "Vierte el caldo caliente y los granos de elote. Deja que hierva suavemente por 5 minutos.",
+      "Agrega las flores de calabaza limpias troceadas con las manos y la ramita de epazote.",
+      "Apaga el fuego de inmediato y tapa la olla. El calor residual cocinará perfectamente la flor sin deshacerla. Sirve bien caliente."
+    ],
+    tags: ["cena", "tlaxcala", "centro", "vegetariano", "vesicula-friendly", "ligero"]
+  },
+  {
+    id: "cen-04",
+    name: "Quesadillas al Comal de Huitlacoche y Panela",
+    region: "Centro (Edomex / Puebla / CDMX)",
+    mealType: "cena",
+    prepDifficulty: "Fácil",
+    prepDifficultyLevel: 1,
+    ingredientsAvailability: "Mercado local",
+    fridgeLife: "El guiso de huitlacoche dura 4 días refrigerado",
+    approxCost: "$$ Moderado (~$35 - $48 MXN por porción)",
+    costLevel: 2,
+    cookingTime: "15 min",
+    servings: "2 personas (4 quesadillas)",
+    calories: "~270 kcal por ración",
+    vesiculaFriendly: true,
+    vesiculaStatus: "Excelente / Seguro",
+    vesiculaTips: "El 'caviar mexicano' (huitlacoche) es un hongo del maíz lleno de antioxidantes y aminoácidos. Al hacerse en comal con queso panela o canasto fresco, es totalmente seguro para la vesícula.",
+    colorTheme: "from-zinc-700 to-stone-900",
+    emoji: "🌽",
+    description: "Tortillas de maíz nixtamalizado calientitas rellenas de huitlacoche guisado con cebolla y epazote, acompañadas de queso panela fundido al calor del comal.",
+    ingredients: [
+      "250 g de huitlacoche limpio",
+      "1/4 de cebolla blanca picada",
+      "1 diente de ajo pequeño picado",
+      "1 ramita de epazote picado",
+      "4 tortillas de maíz recién hechas",
+      "100 g de queso panela en láminas o desmoronado",
+      "Pizca de sal"
+    ],
+    instructions: [
+      "En una sartén antiadherente con una gota de aceite saltea la cebolla y el ajo durante 2 minutos.",
+      "Agrega el huitlacoche y el epazote picado. Sazona con una pizca de sal.",
+      "Cocina a fuego medio-bajo durante 7 minutos moviendo constantemente hasta que tome un color negro brillante y textura suave.",
+      "Calienta las tortillas de maíz en el comal hasta que inflen.",
+      "Rellena cada tortilla con dos cucharadas de huitlacoche y láminas de queso panela.",
+      "Dobla y deja en el comal 1 minuto por lado para que el queso panela se suavice con el vapor."
+    ],
+    tags: ["cena", "centro", "huitlacoche", "vesicula-friendly", "comal"]
+  },
+  {
+    id: "cen-05",
+    name: "Crema Ligera de Elote y Calabacita sin Lácteos Grasos",
+    region: "Occidente (Jalisco / Colima)",
+    mealType: "cena",
+    prepDifficulty: "Muy Fácil",
+    prepDifficultyLevel: 1,
+    ingredientsAvailability: "Ingredientes comunes en casa",
+    fridgeLife: "3 a 4 días en tupper hermético",
+    approxCost: "$ Económico (~$18 - $26 MXN por porción)",
+    costLevel: 1,
+    cookingTime: "20 min",
+    servings: "4 porciones",
+    calories: "~160 kcal por ración",
+    vesiculaFriendly: true,
+    vesiculaStatus: "Excelente / Seguro",
+    vesiculaTips: "La textura cremosa se logra licuando el elote y la calabacita cocida, sin mantequilla ni crema ácida con grasa animal. Puede usarse un toque de leche descremada o vegetal.",
+    colorTheme: "from-yellow-500 to-amber-600",
+    emoji: "🥣",
+    description: "Sopa crema suave y aterciopelada de elote tierno y calabacitas, sin crema pesada ni mantequilla, ideal para una digestión nocturna profunda.",
+    ingredients: [
+      "2 tazas de granos de elote cocidos",
+      "2 calabacitas verdes cocidas al vapor",
+      "1/4 de cebolla cocida",
+      "2 tazas de caldo de verduras o agua",
+      "1/2 taza de leche descremada o vegetal (almendra sin azúcar)",
+      "1 pizca de nuez moscada",
+      "Sal y pimienta al gusto"
+    ],
+    instructions: [
+      "Coloca en la licuadora el elote cocido, las calabacitas, la cebolla, el caldo de verduras y la leche descremada.",
+      "Licúa a máxima velocidad durante 2 minutos hasta obtener una crema perfectamente tersa y sin grumos.",
+      "Vierte la mezcla en una ollita y calienta a fuego medio.",
+      "Agrega una pizca de nuez moscada y sal. Deja que hierva suavemente durante 3 minutos moviendo con un batidor o cuchara.",
+      "Sirve en tazones y decora con unos cuantos granos enteros de elote cocido por encima."
+    ],
+    tags: ["cena", "occidente", "sin-grasa", "vesicula-friendly", "rapido"]
+  },
+
+  // ==========================================
+  // PLATILLOS TRADICIONALES DE REFERENCIA (CON ETIQUETAS DE MODERACIÓN / CUIDADO)
+  // ==========================================
+  {
+    id: "com-09",
+    name: "Cochinita Pibil Tradicional al Horno",
+    region: "Yucatán (Península)",
+    mealType: "comida",
+    prepDifficulty: "Media",
+    prepDifficultyLevel: 2,
+    ingredientsAvailability: "Mercado local",
+    fridgeLife: "4 a 5 días refrigerado (congela muy bien hasta 2 meses)",
+    approxCost: "$$ Moderado (~$55 - $75 MXN por porción)",
+    costLevel: 2,
+    cookingTime: "2 horas al horno",
+    servings: "6 porciones",
+    calories: "~440 kcal por ración",
+    vesiculaFriendly: "adaptable",
+    vesiculaStatus: "Moderado con adaptación",
+    vesiculaTips: "¡OJO si tienes dolor vesicular activo! La cochinita tradicional se hace con lomo o pierna de cerdo y manteca. Para hacerla vesícula-friendly: usa lomo magro de cerdo o pechuga de pollo, cero manteca y cocina al vapor en hoja de plátano.",
+    colorTheme: "from-amber-600 to-red-700",
+    emoji: "🐖",
+    description: "El manjar yucateco por excelencia marinado con achiote, jugo de naranja agria y especias, cocinado a fuego lento en hojas de plátano con cebolla morada encurtida.",
+    ingredients: [
+      "1 kg de pierna o lomo de cerdo magro en trozos (o pollo para versión ligera)",
+      "100 g de pasta de achiote",
+      "1 taza de jugo de naranja agria",
+      "1/2 cucharadita de comino y orégano",
+      "Hojas de plátano pasadas por comal",
+      "Cebolla morada fileteada con limón y orégano para acompañar"
+    ],
+    instructions: [
+      "Disuelve el achiote con el jugo de naranja agria, comino, orégano y sal.",
+      "Baña la carne con la marinada y deja reposar mínimo 2 horas (o toda la noche).",
+      "Forra una charola o refractario con las hojas de plátano, coloca la carne con todo el jugo y cúbrela bien con más hojas de plátano y papel aluminio.",
+      "Hornea a 170°C durante 2 horas hasta que la carne se desbarate sola con el tenedor.",
+      "Deshebra la carne y baña con sus propios jugos desgrasados. Acompaña con cebolla morada curtida."
+    ],
+    tags: ["comida", "yucatan", "tradicional", "adaptable"]
+  },
+  {
+    id: "com-10",
+    name: "Asado de Puerco Norteño al Guajillo",
+    region: "Coahuila, Nuevo León y Zacatecas",
+    mealType: "comida",
+    prepDifficulty: "Media",
+    prepDifficultyLevel: 2,
+    ingredientsAvailability: "Carnicería y mercado",
+    fridgeLife: "5 días en refrigerador",
+    approxCost: "$$ Moderado (~$60 - $80 MXN por porción)",
+    costLevel: 2,
+    cookingTime: "1 hr 15 min",
+    servings: "5 porciones",
+    calories: "~510 kcal por ración",
+    vesiculaFriendly: false,
+    vesiculaStatus: "No recomendado en crisis / Alto en grasa",
+    vesiculaTips: "Platillo festivo alto en grasa saturada y condimento concentrado. Si tienes litiasis vesicular (piedras) o inflamación digestiva, EVITAR consumir este platillo en crisis o sustituir la carne de cerdo por trozos de pechuga magra sin dorar en grasa.",
+    colorTheme: "from-red-800 to-stone-900",
+    emoji: "🥘",
+    description: "Guiso festivo de boda norteño con trozos dorados de carne de cerdo bañados en pasta espesa de chiles anchos, guajillo, cáscara de naranja y orégano silvestre.",
+    ingredients: [
+      "800 g de carne de cerdo en trozos",
+      "4 chiles anchos limpios",
+      "4 chiles guajillo limpios",
+      "1 pedacito de cáscara de naranja",
+      "2 dientes de ajo, comino, orégano y laurel",
+      "Sal de grano"
+    ],
+    instructions: [
+      "Cuece la carne en una cazuela con agua y sal hasta que el agua se evapore y la carne comience a dorarse.",
+      "Hierve los chiles anchos y guajillo durante 8 minutos y licúalos con el ajo, comino, orégano y un toque de cáscara de naranja.",
+      "Vierte el adobo colado sobre la carne dorada.",
+      "Agrega las hojas de laurel y deja hervir a fuego lento por 30 minutos hasta que el adobo espese y tome un brillo intenso.",
+      "Tradicionalmente se sirve con arroz rojo y frijoles refritos."
+    ],
+    tags: ["comida", "norte", "coahuila", "festivo", "alto-en-grasa"]
+  }
+];
+
+// Opciones de configuración de la app
+const APP_REGIONS = [
+  "Todas las regiones",
+  "Oaxaca (Valles Centrales)",
+  "Centro de México (CDMX / Edomex)",
+  "Hidalgo y Tlaxcala",
+  "Veracruz (Costa del Golfo)",
+  "Puebla",
+  "Michoacán / Bajío",
+  "Yucatán (Riviera Maya)",
+  "Jalisco (Guadalajara)",
+  "Nuevo León y Sonora",
+  "Guerrero (Tixtla / Acapulco)",
+  "Bajío (Guanajuato y Querétaro)"
+];
+
+const MEAL_TYPES = [
+  { id: "todos", label: "Todo el menú", icon: "🍽️" },
+  { id: "desayuno", label: "Desayunos", icon: "🍳" },
+  { id: "comida", label: "Comidas", icon: "🍲" },
+  { id: "cena", label: "Cenas ligeras", icon: "🥗" }
+];
+
+// Exportar a nivel global para navegador y entornos modulares
+if (typeof window !== 'undefined') {
+  window.RECIPES_DATA = RECIPES_DATA;
+  window.APP_REGIONS = APP_REGIONS;
+  window.MEAL_TYPES = MEAL_TYPES;
+} else if (typeof global !== 'undefined') {
+  global.RECIPES_DATA = RECIPES_DATA;
+  global.APP_REGIONS = APP_REGIONS;
+  global.MEAL_TYPES = MEAL_TYPES;
+}
+

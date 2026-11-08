@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="huaweiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF5A36"/>
+      <stop offset="45%" stop-color="#E60012"/>
+      <stop offset="100%" stop-color="#A8000D"/>
+    </linearGradient>
+    <linearGradient id="leafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34D399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#E60012" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- HarmonyOS Squircle Background (Smooth Superellipse) -->
+  <rect x="32" y="32" width="448" height="448" rx="112" ry="112" fill="url(#huaweiGrad)" filter="url(#shadow)"/>
+
+  <!-- Subtle glossy overlay typical of EMUI / HarmonyOS -->
+  <path d="M 32 144 C 32 80, 80 32, 144 32 L 368 32 C 200 48, 64 160, 32 300 Z" fill="white" opacity="0.12"/>
+
+  <!-- Traditional Mexican Clay Pot / Cazuela Stylized in Modern Flat HarmonyOS Style -->
+  <g transform="translate(106, 126)">
+    <!-- Steam waves -->
+    <path d="M 120 40 Q 110 15, 125 -5 Q 140 -25, 128 -45" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" fill="none" opacity="0.8"/>
+    <path d="M 155 45 Q 145 20, 160 0 Q 175 -20, 162 -40" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" fill="none" opacity="0.7"/>
+    <path d="M 190 40 Q 180 15, 195 -5 Q 210 -25, 198 -45" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" fill="none" opacity="0.8"/>
+
+    <!-- Pot Body -->
+    <path d="M 20 110 L 280 110 C 275 200, 240 230, 150 230 C 60 230, 25 200, 20 110 Z" fill="#FFFFFF"/>
+    
+    <!-- Pot Rim -->
+    <rect x="10" y="90" width="280" height="24" rx="12" fill="#FFFFFF"/>
+    
+    <!-- Pot Handles (Squircle lugs) -->
+    <path d="M 5 110 C -15 110, -15 150, 5 150" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" fill="none"/>
+    <path d="M 295 110 C 315 110, 315 150, 295 150" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" fill="none"/>
+
+    <!-- Mexican Pattern line on pot -->
+    <path d="M 50 145 L 80 170 L 110 145 L 140 170 L 170 145 L 200 170 L 230 145 L 250 160" stroke="#E60012" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9"/>
+
+    <!-- Green Health Leaf (Vesicle-friendly badge) -->
+    <g transform="translate(180, 125)">
+      <circle cx="45" cy="45" r="45" fill="#FFFFFF" opacity="0.95"/>
+      <path d="M 45 15 C 25 25, 18 55, 32 72 C 38 78, 48 78, 62 68 C 76 52, 70 20, 45 15 Z" fill="url(#leafGrad)"/>
+      <path d="M 32 72 Q 45 45, 52 30" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" fill="none"/>
+    </g>
+  </g>
+</svg>
