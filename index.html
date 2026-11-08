@@ -32,15 +32,23 @@
       </div>
       <div class="hw-title-group">
         <h1>ComeAhorro</h1>
-        <p>Sabores de México & Salud</p>
+        <p>Sabores de México & Variedad</p>
       </div>
     </div>
     <div style="display: flex; align-items: center; gap: 8px;">
-      <span class="hw-badge hw-badge-health" style="font-size: 0.7rem;">Sin cuenta</span>
+      <button id="btnEditProfile" class="hw-pill" style="font-size: 0.74rem; padding: 5px 12px; font-weight: 700;">
+        ⚙️ Mis Gustos
+      </button>
     </div>
   </header>
 
   <main class="app-container">
+
+    <!-- Indicador de Pull to Refresh (Al deslizar hacia abajo en móvil) -->
+    <div id="pullRefreshIndicator" class="pull-refresh-indicator">
+      <div class="refresh-spinner"></div>
+      <span>Cargando platillos nuevos...</span>
+    </div>
 
     <!-- Banner de Instalación PWA (Optimizado para Huawei / Android) -->
     <div id="pwaInstallBanner" class="pwa-install-banner">
@@ -55,12 +63,12 @@
     </div>
 
     <!-- ==========================================
-         VISTA 1: RECETARIO PRINCIPAL
+         VISTA 1: FEED DE RECETAS RECOMENDADAS
          ========================================== -->
     <section id="view-recetario" class="app-view">
-      
-      <!-- Interruptor HarmonyOS Vesícula-Friendly -->
-      <div class="vesicula-toggle-card">
+
+      <!-- Interruptor HarmonyOS Vesícula-Friendly (Solo visible si tiene problemas de salud) -->
+      <div class="vesicula-toggle-card requires-health-feature">
         <div class="vesicula-info">
           <div class="vesicula-icon">🌱</div>
           <div class="vesicula-text">
@@ -74,24 +82,34 @@
         </label>
       </div>
 
-      <!-- Buscador con icono estilo EMUI -->
+      <!-- Barra superior de Feed: Botón para refrescar y generar nuevos platillos -->
+      <div class="feed-header-bar">
+        <span style="font-size: 0.8rem; font-weight: 700; color: var(--hw-text-secondary);">
+          👇 Desliza hacia abajo para más ideas
+        </span>
+        <button id="btnRefreshFeed" class="btn-refresh-feed">
+          🔄 Nuevos platillos
+        </button>
+      </div>
+
+      <!-- Buscador estilo EMUI -->
       <div class="search-wrapper">
         <span class="search-input-icon">🔍</span>
         <input 
           type="text" 
           id="recipeSearch" 
           class="hw-input search-input" 
-          placeholder="Buscar por platillo, ingrediente o estado..."
+          placeholder="Buscar platillo, ingrediente o estado..."
           autocomplete="off"
         >
       </div>
 
-      <!-- Filtro de Región y Estado Mexicano -->
+      <!-- Filtro de Región Mexicana -->
       <div class="filter-row">
         <select id="regionFilter" class="region-select" aria-label="Filtrar por región"></select>
       </div>
 
-      <!-- Chips Horizontales de Momentos del Día -->
+      <!-- Chips de Momentos del Día -->
       <div class="hw-pills-scroll">
         <button class="hw-pill meal-pill active" data-meal="todos">🍽️ Todo el menú</button>
         <button class="hw-pill meal-pill" data-meal="desayuno">🍳 Desayunos</button>
@@ -99,80 +117,76 @@
         <button class="hw-pill meal-pill" data-meal="cena">🥗 Cenas ligeras</button>
       </div>
 
-      <!-- Contador de resultados -->
-      <div style="display: flex; justify-content: space-between; align-items: center; margin: 12px 0 14px 4px;">
+      <!-- Conteo del feed -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0 12px 4px;">
         <span id="recipeCountLabel" style="font-size: 0.78rem; color: var(--hw-text-secondary); font-weight: 600;">
-          Cargando recetas...
+          Cargando tu feed...
         </span>
       </div>
 
-      <!-- Grilla de Recetas -->
+      <!-- Grilla de Tarjetas con Fotografía Gastronómica -->
       <div id="recipesGrid" class="recipes-grid"></div>
     </section>
 
     <!-- ==========================================
-         VISTA 2: GUÍA DE SALUD VESICULAR
+         VISTA 2: GUÍA DE SALUD VESICULAR (Condicional)
          ========================================== -->
-    <section id="view-vesicula" class="app-view" style="display: none;">
+    <section id="view-vesicula" class="app-view requires-health-feature" style="display: none;">
       <div class="hw-card" style="margin-bottom: 18px; border-left: 5px solid var(--hw-health);">
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
           <span style="font-size: 1.8rem;">🌿</span>
           <h2 style="font-size: 1.25rem; font-weight: 800; color: #065F46;">¿Por qué duele la vesícula al comer?</h2>
         </div>
         <p style="font-size: 0.84rem; color: var(--hw-text-secondary); line-height: 1.5; margin-bottom: 12px;">
-          La vesícula biliar almacena la bilis producida por el hígado. Cuando comemos grasas concentradas (manteca, frituras, carnitas, embutidos o quesos madurados), el intestino libera una hormona llamada <strong>colecistoquinina</strong> que le ordena a la vesícula contraerse con fuerza para vaciar bilis.
+          La vesícula almacena la bilis del hígado. Cuando comemos grasas saturadas concentradas (manteca, carnitas, frituras, quesos amarillos), el intestino libera <strong>colecistoquinina</strong> ordenando a la vesícula contraerse de golpe.
         </p>
         <p style="font-size: 0.84rem; color: var(--hw-text-secondary); line-height: 1.5;">
-          Si hay inflamación o piedras (litos), esa contracción violenta causa el famoso <strong>cólico biliar</strong>. Con ComeAhorro adaptamos la cocina mexicana para que disfrutes su riqueza sin activar esos espasmos.
+          Si hay inflamación o piedras, esa contracción brusca causa el <strong>cólico biliar</strong>. En ComeAhorro adaptamos las recetas mexicanas para que disfrutes sin activar ese dolor.
         </p>
       </div>
 
       <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 12px;">🚦 Semáforo de la Cocina Mexicana</h3>
 
-      <!-- Verde -->
       <div class="vesicula-medical-banner vesicula-banner-green" style="margin-bottom: 12px;">
         <div class="vesicula-banner-icon">🟢</div>
         <div class="vesicula-banner-content">
           <h4>Amigos de tu vesícula (Consumo seguro)</h4>
           <p>
-            • <strong>Métodos:</strong> Al comal, al vapor (mixiotes), hervido, en caldillo de jitomate sin freír.<br>
-            • <strong>Ingredientes:</strong> Pechuga de pollo desgrasada, pescado blanco (robalo, tilapia), frijoles de la olla cocidos con epazote (sin freír con manteca), nopales tiernos (su fibra atrapa exceso de bilis), calabacitas, flor de calabaza, queso panela fresco magro, tortillas de maíz de comal.
+            • <strong>Cocción:</strong> Al comal, al vapor (mixiotes), en caldillo de jitomate sin freír.<br>
+            • <strong>Ingredientes:</strong> Pechuga de pollo sin piel, pescado blanco, frijoles de la olla (sin freír con manteca), nopales (atrapan exceso de bilis), calabacitas, queso panela fresco, tortillas de comal.
           </p>
         </div>
       </div>
 
-      <!-- Amarillo -->
       <div class="vesicula-medical-banner vesicula-banner-yellow" style="margin-bottom: 12px;">
         <div class="vesicula-banner-icon">🟡</div>
         <div class="vesicula-banner-content">
-          <h4>Consumo con moderación / Adaptable</h4>
+          <h4>Consumo con moderación</h4>
           <p>
-            • <strong>Grasas vegetales buenas:</strong> Aguacate (máximo 1/4 al día), semillas de pepita tostadas en salsas ligeras.<br>
-            • <strong>Huevo:</strong> Preferir claras o 1 huevo entero + 2 claras si hay sensibilidad.<br>
-            • <strong>Carnes rojas:</strong> Solo cortes 100% magros (pulpa o falda) desgrasados.
+            • <strong>Grasas vegetales:</strong> Aguacate (máximo 1/4 diario), pepitas tostadas.<br>
+            • <strong>Huevo:</strong> Preferir claras o 1 huevo entero + 2 claras.<br>
+            • <strong>Carne de res:</strong> Solo cortes 100% magros y desgrasados.
           </p>
         </div>
       </div>
 
-      <!-- Rojo -->
       <div class="vesicula-medical-banner vesicula-banner-red" style="margin-bottom: 16px;">
         <div class="vesicula-banner-icon">🔴</div>
         <div class="vesicula-banner-content">
-          <h4>Desencadenantes de cólico (Evitar en dolor o crisis)</h4>
+          <h4>Desencadenantes de cólico (Evitar en dolor activo)</h4>
           <p>
-            • Manteca de cerdo animal, chicharrón prensado, carnitas en cazo.<br>
-            • Platillos capeados, empanizados o fritos por inmersión (pescaditos fritos, flautas fritas).<br>
-            • Chorizo, tocino, longaniza, quesos amarillos/grasosos (manchego, chihuahua curado).<br>
-            • Exceso de picante seco que irrite el duodeno.
+            • Manteca de cerdo, carnitas, chicharrón, barbacoa con sebo.<br>
+            • Frituras por inmersión (flautas, empanizados, capeados).<br>
+            • Chorizo, tocino, longaniza, quesos amarillos/grasos.
           </p>
         </div>
       </div>
 
       <div class="hw-card" style="text-align: center; padding: 20px;">
         <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 6px;">¿Deseas activar el modo seguro ahora?</h4>
-        <p style="font-size: 0.8rem; color: var(--hw-text-secondary); margin-bottom: 14px;">Solo verás recetas que respetan el semáforo verde y no sobrecargan la bilis.</p>
+        <p style="font-size: 0.8rem; color: var(--hw-text-secondary); margin-bottom: 14px;">Solo verás recetas que respetan el semáforo verde.</p>
         <button class="hw-btn hw-btn-health" onclick="document.getElementById('vesiculaToggle').checked = true; UIController.vesiculaOnly = true; UIController.switchTab('recetario');">
-          🌱 Activar Filtro Vesicular y Ver Recetas
+          🌱 Activar Filtro y Ver Mi Feed
         </button>
       </div>
     </section>
@@ -185,7 +199,7 @@
         <div style="font-size: 2rem; margin-bottom: 6px;">🎲</div>
         <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--hw-text-primary);">¿Aburrido de comer lo mismo?</h2>
         <p style="font-size: 0.82rem; color: var(--hw-text-secondary); max-width: 380px; margin: 0 auto;">
-          Explora la diversidad de la república mexicana. Gira la ruleta y descubre un platillo tradicional nuevo para hoy.
+          Explora la diversidad de México. Gira la ruleta y descubre un platillo tradicional nuevo para hoy.
         </p>
 
         <div id="rouletteResult" class="roulette-card">
@@ -227,17 +241,16 @@
           </div>
         </div>
         <p style="font-size: 0.82rem; color: var(--hw-text-secondary); line-height: 1.4; margin-bottom: 14px;">
-          ¿Viste una receta en un blog, Facebook, WhatsApp o Kiwilimón? Copia y pega el texto aquí. Nuestro motor analizará si contiene grasas irritantes para tu vesícula, estimará el tiempo de refrigeración y su costo.
+          ¿Viste una receta en redes o páginas web? Pega el texto aquí. Nuestro motor analizará sus ingredientes, estimará el tiempo de refrigeración y su costo.
         </p>
 
-        <!-- Botones de ejemplos para probar rápidamente -->
         <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
           <span style="font-size: 0.74rem; font-weight: 600; color: var(--hw-text-tertiary); align-self: center;">Probar ejemplo:</span>
           <button id="btnExampleHealthy" class="hw-pill" style="font-size: 0.72rem; padding: 4px 10px;">
-            🌱 Pechuga con nopales (Sano)
+            🌱 Pechuga con nopales
           </button>
           <button id="btnExampleRisk" class="hw-pill" style="font-size: 0.72rem; padding: 4px 10px;">
-            ⚠️ Chicharrón frito (Riesgo)
+            ⚠️ Chicharrón frito
           </button>
         </div>
 
@@ -245,16 +258,15 @@
           id="webRecipeInput" 
           class="hw-input" 
           rows="6" 
-          placeholder="Pega aquí el texto de la receta que encontraste en la web (con título, ingredientes y preparación)..."
+          placeholder="Pega aquí el texto de la receta que viste en internet..."
           style="resize: vertical; font-size: 0.84rem;"
         ></textarea>
 
         <button id="btnParseWebRecipe" class="hw-btn hw-btn-primary" style="width: 100%; margin-top: 14px;">
-          🔍 Interpretar y Evaluar para Vesícula
+          🔍 Interpretar y Evaluar
         </button>
       </div>
 
-      <!-- Contenedor del Resultado Interpretado -->
       <div id="webParseResult"></div>
     </section>
 
@@ -272,21 +284,170 @@
   </main>
 
   <!-- ==========================================
+       MODAL DE ENCUESTA INICIAL (ONBOARDING)
+       ========================================== -->
+  <div id="surveyModalOverlay" class="hw-modal-overlay">
+    <div class="hw-modal-sheet survey-card">
+      <div class="hw-sheet-handle"></div>
+
+      <div style="text-align: center; margin-bottom: 16px;">
+        <span id="surveyStepIndicator" class="hw-badge hw-badge-neutral" style="margin-bottom: 6px;">Paso 1 de 4</span>
+        <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--hw-text-primary);">Personalicemos tu Menú</h2>
+        <p style="font-size: 0.8rem; color: var(--hw-text-secondary);">Para recomendarte platillos mexicanos que disfrutes de verdad</p>
+      </div>
+
+      <!-- Paso 1: Carnes y Proteínas -->
+      <div id="surveyStep1" class="survey-step active">
+        <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 6px;">¿Qué proteínas disfrutas más?</h3>
+        <p style="font-size: 0.75rem; color: var(--hw-text-secondary);">Selecciona todas las que te gusten:</p>
+        <div class="survey-choice-grid">
+          <button class="survey-choice-btn selected" data-group="protein" data-val="pollo">
+            <span class="survey-choice-icon">🍗</span>
+            <span>Pollo y pavo</span>
+          </button>
+          <button class="survey-choice-btn selected" data-group="protein" data-val="pescado">
+            <span class="survey-choice-icon">🐟</span>
+            <span>Pescado y mariscos</span>
+          </button>
+          <button class="survey-choice-btn" data-group="protein" data-val="res">
+            <span class="survey-choice-icon">🥩</span>
+            <span>Carne de res magra</span>
+          </button>
+          <button class="survey-choice-btn" data-group="protein" data-val="cerdo">
+            <span class="survey-choice-icon">🐖</span>
+            <span>Carne de cerdo</span>
+          </button>
+          <button class="survey-choice-btn selected" data-group="protein" data-val="leguminosas">
+            <span class="survey-choice-icon">🫘</span>
+            <span>Frijoles y lentejas</span>
+          </button>
+          <button class="survey-choice-btn selected" data-group="protein" data-val="huevo">
+            <span class="survey-choice-icon">🍳</span>
+            <span>Huevo fresco</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Paso 2: Verduras Favoritas -->
+      <div id="surveyStep2" class="survey-step">
+        <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 6px;">¿Qué verduras mexicanas prefieres?</h3>
+        <p style="font-size: 0.75rem; color: var(--hw-text-secondary);">Selecciona tus favoritas:</p>
+        <div class="survey-choice-grid">
+          <button class="survey-choice-btn selected" data-group="veggie" data-val="nopal">
+            <span class="survey-choice-icon">🌵</span>
+            <span>Nopales tiernos</span>
+          </button>
+          <button class="survey-choice-btn selected" data-group="veggie" data-val="calabacita">
+            <span class="survey-choice-icon">🥒</span>
+            <span>Calabacitas criollas</span>
+          </button>
+          <button class="survey-choice-btn selected" data-group="veggie" data-val="champiñon">
+            <span class="survey-choice-icon">🍄</span>
+            <span>Champiñones / Setas</span>
+          </button>
+          <button class="survey-choice-btn selected" data-group="veggie" data-val="elote">
+            <span class="survey-choice-icon">🌽</span>
+            <span>Granos de elote</span>
+          </button>
+          <button class="survey-choice-btn" data-group="veggie" data-val="flor">
+            <span class="survey-choice-icon">🌼</span>
+            <span>Flor de calabaza</span>
+          </button>
+          <button class="survey-choice-btn" data-group="veggie" data-val="aguacate">
+            <span class="survey-choice-icon">🥑</span>
+            <span>Aguacate fresco</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Paso 3: Modos de Preparación -->
+      <div id="surveyStep3" class="survey-step">
+        <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 6px;">¿Cómo te gusta cocinar?</h3>
+        <p style="font-size: 0.75rem; color: var(--hw-text-secondary);">Tus técnicas preferidas:</p>
+        <div class="survey-choice-grid">
+          <button class="survey-choice-btn selected" data-group="method" data-val="comal">
+            <span class="survey-choice-icon">🫓</span>
+            <span>Al comal tradicional</span>
+          </button>
+          <button class="survey-choice-btn selected" data-group="method" data-val="vapor">
+            <span class="survey-choice-icon">♨️</span>
+            <span>Al vapor / Mixiote</span>
+          </button>
+          <button class="survey-choice-btn selected" data-group="method" data-val="caldillo">
+            <span class="survey-choice-icon">🍲</span>
+            <span>Caldillos y sopas</span>
+          </button>
+          <button class="survey-choice-btn" data-group="method" data-val="asado">
+            <span class="survey-choice-icon">🔥</span>
+            <span>Asado / Plancha</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Paso 4: Salud Digestiva y Vesícula -->
+      <div id="surveyStep4" class="survey-step">
+        <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 6px;">¿Tienes alguna condición digestiva?</h3>
+        <p style="font-size: 0.75rem; color: var(--hw-text-secondary);">Adaptaremos o esconderemos los filtros médicos según tu respuesta:</p>
+        <div style="display: flex; flex-direction: column; gap: 10px; margin: 16px 0 20px 0;">
+          <button class="survey-choice-btn selected" data-group="health" data-val="vesicula" style="flex-direction: row; text-align: left; padding: 12px 14px;">
+            <span class="survey-choice-icon">🌱</span>
+            <div style="flex: 1;">
+              <strong>Problemas de Vesícula Biliar</strong>
+              <div style="font-size: 0.72rem; color: var(--hw-text-secondary);">Activar semáforo bajo en grasa y evitar cólicos</div>
+            </div>
+          </button>
+
+          <button class="survey-choice-btn" data-group="health" data-val="gastro" style="flex-direction: row; text-align: left; padding: 12px 14px;">
+            <span class="survey-choice-icon">🌿</span>
+            <div style="flex: 1;">
+              <strong>Gastritis / Reflujo / Colon Irritable</strong>
+              <div style="font-size: 0.72rem; color: var(--hw-text-secondary);">Comidas digestivas, sin picantes irritantes</div>
+            </div>
+          </button>
+
+          <button class="survey-choice-btn" data-group="health" data-val="ninguno" style="flex-direction: row; text-align: left; padding: 12px 14px;">
+            <span class="survey-choice-icon">✨</span>
+            <div style="flex: 1;">
+              <strong>Ninguna (Digestión de hierro)</strong>
+              <div style="font-size: 0.72rem; color: var(--hw-text-secondary);">Ocultar todos los avisos médicos y disfrutar todo</div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Navegación del Asistente -->
+      <div style="display: flex; justify-content: space-between; gap: 10px;">
+        <button id="btnSurveyPrev" class="hw-btn hw-btn-outline" style="display: none; padding: 10px 18px;">
+          ← Atrás
+        </button>
+        <button id="btnSurveyNext" class="hw-btn hw-btn-primary" style="flex: 1; padding: 12px 20px;">
+          Siguiente →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
        MODAL BOTTOM SHEET ESTILO HARMONYOS (DETALLE DE RECETA)
        ========================================== -->
   <div id="recipeModalOverlay" class="hw-modal-overlay">
     <div class="hw-modal-sheet">
       <div class="hw-sheet-handle"></div>
 
+      <!-- Fotografía Real en el Modal -->
+      <div class="modal-detail-img-wrap">
+        <img id="modalDetailImg" src="" alt="Platillo" class="modal-detail-img" />
+      </div>
+
       <div class="recipe-detail-header">
         <h2 id="modalRecipeTitle" class="recipe-detail-title">Nombre de la Receta</h2>
         <div id="modalRecipeRegion" class="recipe-detail-region">Región</div>
       </div>
 
-      <!-- Semáforo de Vesícula -->
+      <!-- Semáforo de Vesícula (Condicional) -->
       <div id="modalVesiculaBanner" class="vesicula-medical-banner vesicula-banner-green"></div>
 
-      <!-- Métricas Prácticas (Caducidad en refri, Costo, Dificultad, Mercado) -->
+      <!-- Métricas Prácticas -->
       <div class="recipe-metrics-grid" style="margin-bottom: 18px;">
         <div class="metric-item">
           <span class="metric-label">❄️ Conservación Refri</span>
@@ -301,7 +462,7 @@
           <span id="modalCookingTime" class="metric-value">25 min • Fácil</span>
         </div>
         <div class="metric-item">
-          <span class="metric-label">🛒 Conseguir Ingredientes</span>
+          <span class="metric-label">🛒 Ingredientes</span>
           <span id="modalIngredientsAvail" class="metric-value">En la tiendita</span>
         </div>
       </div>
@@ -339,9 +500,9 @@
   <nav class="hw-bottom-nav">
     <button class="hw-nav-item active" data-tab="recetario">
       <span class="hw-nav-icon">🍲</span>
-      <span class="hw-nav-label">Recetario</span>
+      <span class="hw-nav-label">Mi Feed</span>
     </button>
-    <button class="hw-nav-item" data-tab="vesicula">
+    <button class="hw-nav-item requires-health-feature" data-tab="vesicula">
       <span class="hw-nav-icon">🌱</span>
       <span class="hw-nav-label">Vesícula</span>
     </button>

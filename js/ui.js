@@ -1,6 +1,7 @@
 /**
  * ComeAhorro - Controlador de Interfaz de Usuario (UI)
- * Maneja el renderizado de recetas, modales, filtros reactivos y vistas.
+ * Maneja el Feed dinámico con Pull-to-Refresh, Onboarding inicial,
+ * ocultamiento condicional de salud y renderizado de tarjetas con fotos.
  */
 
 const UIController = {
@@ -10,31 +11,126 @@ const UIController = {
   searchQuery: '',
   vesiculaOnly: false,
   activeRecipeId: null,
+  currentFeed: [],
+
+  // Variables táctiles para Pull to Refresh
+  touchStartY: 0,
+  touchMoveY: 0,
+  isPulling: false,
 
   init() {
-    // Cargar preferencias guardadas
-    const settings = StorageService.getSettings();
-    this.vesiculaOnly = settings.vesiculaOnly || false;
-
-    const toggleInput = document.getElementById('vesiculaToggle');
-    if (toggleInput) {
-      toggleInput.checked = this.vesiculaOnly;
+    // 1. Verificar si el usuario ya completó la encuesta
+    const profile = StorageService.getUserProfile();
+    if (!profile) {
+      this.openSurveyModal();
+    } else {
+      this.applyUserProfile(profile);
     }
 
+    // 2. Inicializar el Feed de recetas (desde caché o base de datos)
+    this.initFeed();
+
+    // 3. Vincular eventos de interfaz
     this.bindEvents();
+
+    // 4. Configurar Pull to Refresh
+    this.setupPullToRefresh();
+
+    // 5. Renderizar vista inicial
     this.renderCurrentView();
   },
 
+  /**
+   * Aplica las preferencias del perfil del usuario
+   */
+  applyUserProfile(profile) {
+    if (!profile) return;
+
+    const hasHealthIssues = profile.healthCondition === 'vesicula' || profile.healthCondition === 'gastro';
+
+    if (!hasHealthIssues) {
+      // Ocultar TODO lo relacionado con vesícula y salud gastrointestinal
+      document.body.classList.add('hide-health-sections');
+      this.vesiculaOnly = false;
+    } else {
+      // Mostrar y activar protección
+      document.body.classList.remove('hide-health-sections');
+      this.vesiculaOnly = true;
+      const toggle = document.getElementById('vesiculaToggle');
+      if (toggle) toggle.checked = true;
+    }
+  },
+
+  /**
+   * Carga o inicializa el feed con recetas y las almacena en caché
+   */
+  initFeed() {
+    const cached = StorageService.getFeedRecipes();
+    const custom = StorageService.getCustomRecipes();
+
+    if (cached && cached.length > 0) {
+      this.currentFeed = [...custom, ...cached];
+    } else {
+      // Ordenar según perfil
+      const profile = StorageService.getUserProfile();
+      let initial = [...RECIPES_DATA];
+
+      if (profile && profile.healthCondition === 'vesicula') {
+        initial = initial.filter(r => r.vesiculaFriendly !== false);
+      }
+
+      this.currentFeed = [...custom, ...initial];
+      StorageService.saveFeedRecipes(initial);
+    }
+  },
+
+  /**
+   * Refresca el feed agregando nuevos platillos con el motor procedural
+   */
+  refreshFeed(showAnimation = true) {
+    const indicator = document.getElementById('pullRefreshIndicator');
+    if (indicator && showAnimation) {
+      indicator.classList.add('visible');
+    }
+
+    setTimeout(() => {
+      const profile = StorageService.getUserProfile();
+      const newDishes = RecipeEngine.generateBatch(6, profile);
+
+      // Anteponer los nuevos platillos al feed
+      this.currentFeed = [...newDishes, ...this.currentFeed];
+      StorageService.saveFeedRecipes(this.currentFeed);
+
+      if (indicator) {
+        indicator.classList.remove('visible');
+      }
+
+      this.renderRecipeList();
+    }, 600);
+  },
+
   bindEvents() {
+    // Botón manual de refrescar feed
+    const refreshBtn = document.getElementById('btnRefreshFeed');
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', () => {
+        this.refreshFeed(true);
+      });
+    }
+
+    // Botón de editar gustos/encuesta en el header
+    const editProfileBtn = document.getElementById('btnEditProfile');
+    if (editProfileBtn) {
+      editProfileBtn.addEventListener('click', () => {
+        this.openSurveyModal();
+      });
+    }
+
     // Switch de vesícula-friendly
     const toggleInput = document.getElementById('vesiculaToggle');
     if (toggleInput) {
       toggleInput.addEventListener('change', (e) => {
         this.vesiculaOnly = e.target.checked;
-        StorageService.saveSettings({
-          ...StorageService.getSettings(),
-          vesiculaOnly: this.vesiculaOnly
-        });
         this.renderRecipeList();
       });
     }
@@ -57,10 +153,10 @@ const UIController = {
       });
     }
 
-    // Tabs de momentos (Desayuno, Comida, Cena)
+    // Pills de momentos del día (Desayuno, Comida, Cena)
     const mealPills = document.querySelectorAll('.meal-pill');
     mealPills.forEach(pill => {
-      pill.addEventListener('click', (e) => {
+      pill.addEventListener('click', () => {
         mealPills.forEach(p => p.classList.remove('active'));
         pill.classList.add('active');
         this.selectedMealType = pill.dataset.meal;
@@ -78,42 +174,69 @@ const UIController = {
       });
     });
 
-    // Cerrar modal al tocar overlay
+    // Cerrar modal de detalle
     const overlay = document.getElementById('recipeModalOverlay');
     if (overlay) {
       overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) {
-          this.closeRecipeDetail();
-        }
+        if (e.target === overlay) this.closeRecipeDetail();
       });
     }
 
-    // Cerrar modal con botón
     const closeBtn = document.getElementById('closeModalBtn');
     if (closeBtn) {
-      closeBtn.addEventListener('click', () => {
-        this.closeRecipeDetail();
-      });
+      closeBtn.addEventListener('click', () => this.closeRecipeDetail());
     }
+  },
+
+  /**
+   * Configura el gesto de deslizar hacia abajo (Pull-to-Refresh) en móvil
+   */
+  setupPullToRefresh() {
+    window.addEventListener('touchstart', (e) => {
+      if (window.scrollY === 0) {
+        this.touchStartY = e.touches[0].clientY;
+        this.isPulling = true;
+      }
+    }, { passive: true });
+
+    window.addEventListener('touchmove', (e) => {
+      if (!this.isPulling || window.scrollY > 0) return;
+      this.touchMoveY = e.touches[0].clientY;
+      const pullDistance = this.touchMoveY - this.touchStartY;
+
+      if (pullDistance > 60) {
+        const indicator = document.getElementById('pullRefreshIndicator');
+        if (indicator) indicator.classList.add('visible');
+      }
+    }, { passive: true });
+
+    window.addEventListener('touchend', () => {
+      if (!this.isPulling) return;
+      const pullDistance = this.touchMoveY - this.touchStartY;
+      this.isPulling = false;
+
+      if (pullDistance > 70 && window.scrollY === 0) {
+        this.refreshFeed(true);
+      } else {
+        const indicator = document.getElementById('pullRefreshIndicator');
+        if (indicator) indicator.classList.remove('visible');
+      }
+      this.touchStartY = 0;
+      this.touchMoveY = 0;
+    });
   },
 
   switchTab(tabId) {
     this.activeTab = tabId;
 
-    // Ocultar todas las vistas
     const views = document.querySelectorAll('.app-view');
     views.forEach(v => v.style.display = 'none');
 
-    // Mostrar vista activa
     const targetView = document.getElementById(`view-${tabId}`);
-    if (targetView) {
-      targetView.style.display = 'block';
-    }
+    if (targetView) targetView.style.display = 'block';
 
-    // Scroll hacia arriba suavemente
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    // Renderizar contenidos según la vista
     if (tabId === 'recetario') {
       this.renderRecipeList();
     } else if (tabId === 'favoritos') {
@@ -128,145 +251,156 @@ const UIController = {
   },
 
   /**
-   * Filtrar y renderizar el catálogo de recetas
+   * Renderiza las recetas en el feed
    */
   renderRecipeList() {
     const container = document.getElementById('recipesGrid');
     if (!container) return;
 
-    let allRecipes = StorageService.getAllRecipes();
+    let list = [...this.currentFeed];
 
-    // Filtro 1: Momento del día (Desayuno, Comida, Cena)
+    // Filtro 1: Momento del día
     if (this.selectedMealType !== 'todos') {
-      allRecipes = allRecipes.filter(r => r.mealType === this.selectedMealType);
+      list = list.filter(r => r.mealType === this.selectedMealType);
     }
 
     // Filtro 2: Región
     if (this.selectedRegion !== 'Todas las regiones') {
-      allRecipes = allRecipes.filter(r => r.region.includes(this.selectedRegion.replace(/ \(.*\)/, '')));
+      list = list.filter(r => r.region && r.region.includes(this.selectedRegion.replace(/ \(.*\)/, '')));
     }
 
     // Filtro 3: Vesícula-Friendly
     if (this.vesiculaOnly) {
-      allRecipes = allRecipes.filter(r => r.vesiculaFriendly === true);
+      list = list.filter(r => r.vesiculaFriendly === true);
     }
 
-    // Filtro 4: Búsqueda en texto
+    // Filtro 4: Búsqueda
     if (this.searchQuery) {
-      allRecipes = allRecipes.filter(r => {
-        const textToSearch = [
+      list = list.filter(r => {
+        const text = [
           r.name,
           r.region,
           r.description,
           ...(r.ingredients || []),
           ...(r.tags || [])
         ].join(' ').toLowerCase();
-        return textToSearch.includes(this.searchQuery);
+        return text.includes(this.searchQuery);
       });
     }
 
-    // Conteo de resultados
     const countLabel = document.getElementById('recipeCountLabel');
     if (countLabel) {
-      countLabel.textContent = `${allRecipes.length} platillos encontrados`;
+      countLabel.textContent = `${list.length} platillos en tu feed`;
     }
 
-    if (allRecipes.length === 0) {
+    if (list.length === 0) {
       container.innerHTML = `
         <div class="empty-state">
           <div class="empty-state-icon">🍲</div>
           <h3>Sin platillos con estos filtros</h3>
-          <p>Prueba desactivando el filtro de región o el modo estricto de vesícula para ver más opciones.</p>
+          <p>Prueba deslizando hacia abajo para generar ideas nuevas o modifica los filtros.</p>
         </div>
       `;
       return;
     }
 
-    container.innerHTML = allRecipes.map(recipe => this.createRecipeCardHTML(recipe)).join('');
+    container.innerHTML = list.map(recipe => this.createRecipeCardHTML(recipe)).join('');
 
-    // Asignar listeners de click a las tarjetas
+    // Click en tarjetas
     container.querySelectorAll('.recipe-card').forEach(card => {
       card.addEventListener('click', (e) => {
-        // Evitar que el clic en el botón de favorito abra el modal
-        if (e.target.closest('.recipe-favorite-btn')) return;
-        const recipeId = card.dataset.id;
-        this.openRecipeDetail(recipeId);
+        if (e.target.closest('.recipe-img-fav-btn')) return;
+        this.openRecipeDetail(card.dataset.id);
       });
     });
 
-    // Asignar listeners a botones de favoritos
-    container.querySelectorAll('.recipe-favorite-btn').forEach(btn => {
+    // Click en botón favorito
+    container.querySelectorAll('.recipe-img-fav-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const recipeId = btn.dataset.id;
         const isFav = StorageService.toggleFavorite(recipeId);
         btn.textContent = isFav ? '❤️' : '🤍';
-        btn.classList.toggle('is-fav', isFav);
       });
     });
   },
 
   /**
-   * Generar HTML de cada tarjeta estilo Squircle HarmonyOS
+   * Genera el HTML de cada tarjeta con fotografía gastronómica
    */
   createRecipeCardHTML(recipe) {
     const isFav = StorageService.isFavorite(recipe.id);
+    const profile = StorageService.getUserProfile();
+    const showHealth = profile && (profile.healthCondition === 'vesicula' || profile.healthCondition === 'gastro');
 
-    // Semáforo de salud vesicular
+    // Semáforo solo si aplica condición de salud
     let vesiculaBadge = '';
-    if (recipe.vesiculaFriendly === true) {
-      vesiculaBadge = `<span class="hw-badge hw-badge-health">🌱 Vesícula-Friendly</span>`;
-    } else if (recipe.vesiculaFriendly === 'adaptable') {
-      vesiculaBadge = `<span class="hw-badge hw-badge-warning">⚡ Adaptable</span>`;
-    } else {
-      vesiculaBadge = `<span class="hw-badge hw-badge-danger">⚠️ Alto en grasa</span>`;
+    if (showHealth) {
+      if (recipe.vesiculaFriendly === true) {
+        vesiculaBadge = `<span class="hw-badge hw-badge-health">🌱 Vesícula-Friendly</span>`;
+      } else if (recipe.vesiculaFriendly === 'adaptable') {
+        vesiculaBadge = `<span class="hw-badge hw-badge-warning">⚡ Adaptable</span>`;
+      } else {
+        vesiculaBadge = `<span class="hw-badge hw-badge-danger">⚠️ Alto en grasa</span>`;
+      }
     }
 
     const mealLabel = recipe.mealType === 'desayuno' ? '🍳 Desayuno' : (recipe.mealType === 'cena' ? '🥗 Cena' : '🍲 Comida');
+    const imageSrc = recipe.imageUrl || 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=800&q=80';
 
     return `
       <div class="recipe-card" data-id="${recipe.id}">
-        <div class="recipe-card-header">
-          <div class="recipe-meta-top">
-            <span class="hw-badge hw-badge-neutral">${mealLabel}</span>
+        <!-- Imagen Referencial con Fotografía Real -->
+        <div class="recipe-img-container">
+          <img 
+            src="${imageSrc}" 
+            alt="${recipe.name}" 
+            class="recipe-img"
+            loading="lazy"
+            onerror="this.src='https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=800&q=80'"
+          />
+          <div class="recipe-img-badge">
+            <span class="hw-badge hw-badge-neutral" style="background: rgba(255,255,255,0.9); backdrop-filter: blur(6px);">
+              ${mealLabel}
+            </span>
             ${vesiculaBadge}
           </div>
-          <button class="recipe-favorite-btn ${isFav ? 'is-fav' : ''}" data-id="${recipe.id}" aria-label="Favorito">
+          <button class="recipe-img-fav-btn" data-id="${recipe.id}" aria-label="Favorito">
             ${isFav ? '❤️' : '🤍'}
           </button>
         </div>
 
         <div class="recipe-card-body">
-          <h3 class="recipe-card-title">${recipe.emoji || '🥘'} ${recipe.name}</h3>
+          <h3 class="recipe-card-title">${recipe.name}</h3>
           <div class="recipe-card-region">📍 ${recipe.region}</div>
           <p class="recipe-card-desc">${recipe.description}</p>
 
           <div class="recipe-metrics-grid">
             <div class="metric-item">
-              <span class="metric-label">❄️ Caducidad Refri</span>
-              <span class="metric-value">${recipe.fridgeLife?.split('(')[0] || '3-4 días'}</span>
+              <span class="metric-label">❄️ Refri</span>
+              <span class="metric-value">${recipe.fridgeLife ? recipe.fridgeLife.split('(')[0] : '3-4 días'}</span>
             </div>
             <div class="metric-item">
-              <span class="metric-label">💵 Costo Aprox</span>
-              <span class="metric-value">${recipe.approxCost?.split('(')[0] || '$ Económico'}</span>
+              <span class="metric-label">💵 Costo</span>
+              <span class="metric-value">${recipe.approxCost ? recipe.approxCost.split('(')[0] : '$ Económico'}</span>
             </div>
             <div class="metric-item">
-              <span class="metric-label">⏱️ Preparación</span>
-              <span class="metric-value">${recipe.cookingTime || '25 min'} (${recipe.prepDifficulty})</span>
+              <span class="metric-label">⏱️ Tiempo</span>
+              <span class="metric-value">${recipe.cookingTime || '25 min'}</span>
             </div>
             <div class="metric-item">
               <span class="metric-label">🛒 Ingredientes</span>
-              <span class="metric-value">${recipe.ingredientsAvailability?.split('/')[0] || 'Comunes'}</span>
+              <span class="metric-value">${recipe.ingredientsAvailability ? recipe.ingredientsAvailability.split('/')[0] : 'Comunes'}</span>
             </div>
           </div>
         </div>
 
         <div class="recipe-card-footer">
-          <span style="font-size: 0.78rem; color: var(--hw-text-secondary); font-weight: 600;">
+          <span style="font-size: 0.76rem; color: var(--hw-text-secondary); font-weight: 600;">
             ${recipe.ingredients ? recipe.ingredients.length : 0} ingredientes
           </span>
           <span style="font-size: 0.8rem; color: var(--hw-primary); font-weight: 700; display: flex; align-items: center; gap: 4px;">
-            Ver receta <span>→</span>
+            Ver preparación <span>→</span>
           </span>
         </div>
       </div>
@@ -274,20 +408,28 @@ const UIController = {
   },
 
   /**
-   * Abrir Modal Sheet con Detalle de la Receta
+   * Abre el Modal Sheet con detalle completo y foto
    */
   openRecipeDetail(recipeId) {
-    const recipe = StorageService.getRecipeById(recipeId);
+    let recipe = this.currentFeed.find(r => r.id === recipeId);
+    if (!recipe) recipe = StorageService.getRecipeById(recipeId);
     if (!recipe) return;
 
     this.activeRecipeId = recipeId;
     const isFav = StorageService.isFavorite(recipe.id);
+    const profile = StorageService.getUserProfile();
+    const showHealth = profile && (profile.healthCondition === 'vesicula' || profile.healthCondition === 'gastro');
 
-    // Header del modal
-    document.getElementById('modalRecipeTitle').textContent = `${recipe.emoji || '🥘'} ${recipe.name}`;
+    // Imagen en modal
+    const modalImg = document.getElementById('modalDetailImg');
+    if (modalImg) {
+      modalImg.src = recipe.imageUrl || 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=800&q=80';
+    }
+
+    document.getElementById('modalRecipeTitle').textContent = recipe.name;
     document.getElementById('modalRecipeRegion').textContent = `📍 ${recipe.region} • ${recipe.mealType.toUpperCase()}`;
 
-    // Botón de favorito en el modal
+    // Botón de favorito
     const modalFavBtn = document.getElementById('modalFavBtn');
     if (modalFavBtn) {
       modalFavBtn.textContent = isFav ? '❤️ En Favoritos' : '🤍 Guardar en Favoritos';
@@ -298,34 +440,40 @@ const UIController = {
       };
     }
 
-    // Banner de salud vesicular
+    // Banner de salud vesicular (oculto si no tiene problemas)
     const bannerContainer = document.getElementById('modalVesiculaBanner');
-    let bannerClass = 'vesicula-banner-green';
-    let bannerIcon = '🌱';
-    if (recipe.vesiculaFriendly === 'adaptable') {
-      bannerClass = 'vesicula-banner-yellow';
-      bannerIcon = '⚡';
-    } else if (recipe.vesiculaFriendly === false) {
-      bannerClass = 'vesicula-banner-red';
-      bannerIcon = '⚠️';
+    if (bannerContainer) {
+      if (!showHealth) {
+        bannerContainer.style.display = 'none';
+      } else {
+        bannerContainer.style.display = 'flex';
+        let bannerClass = 'vesicula-banner-green';
+        let bannerIcon = '🌱';
+        if (recipe.vesiculaFriendly === 'adaptable') {
+          bannerClass = 'vesicula-banner-yellow';
+          bannerIcon = '⚡';
+        } else if (recipe.vesiculaFriendly === false) {
+          bannerClass = 'vesicula-banner-red';
+          bannerIcon = '⚠️';
+        }
+
+        bannerContainer.className = `vesicula-medical-banner ${bannerClass}`;
+        bannerContainer.innerHTML = `
+          <div class="vesicula-banner-icon">${bannerIcon}</div>
+          <div class="vesicula-banner-content">
+            <h4>Semáforo Vesicular: ${recipe.vesiculaStatus || 'Información de Salud'}</h4>
+            <p>${recipe.vesiculaTips || 'Platillo balanceado de fácil digestión.'}</p>
+          </div>
+        `;
+      }
     }
 
-    bannerContainer.className = `vesicula-medical-banner ${bannerClass}`;
-    bannerContainer.innerHTML = `
-      <div class="vesicula-banner-icon">${bannerIcon}</div>
-      <div class="vesicula-banner-content">
-        <h4>Semáforo Vesicular: ${recipe.vesiculaStatus || 'Información de Salud'}</h4>
-        <p>${recipe.vesiculaTips || 'Platillo equilibrado sin sobrecarga de lípidos.'}</p>
-      </div>
-    `;
-
-    // Métricas en el modal (caducidad, costo, dificultad, compras)
-    document.getElementById('modalFridgeLife').textContent = recipe.fridgeLife || '3 a 4 días en tupper hermético';
+    document.getElementById('modalFridgeLife').textContent = recipe.fridgeLife || '3 a 4 días';
     document.getElementById('modalApproxCost').textContent = recipe.approxCost || '$ Económico';
-    document.getElementById('modalCookingTime').textContent = `${recipe.cookingTime} • Facilidad: ${recipe.prepDifficulty}`;
+    document.getElementById('modalCookingTime').textContent = `${recipe.cookingTime || '25 min'} • ${recipe.prepDifficulty || 'Fácil'}`;
     document.getElementById('modalIngredientsAvail').textContent = recipe.ingredientsAvailability || 'Fácil de conseguir';
 
-    // Lista de ingredientes interactiva (Checklist de compras/cocina)
+    // Checklist de ingredientes
     const ingredientsList = document.getElementById('modalIngredientsList');
     if (recipe.ingredients && recipe.ingredients.length > 0) {
       ingredientsList.innerHTML = recipe.ingredients.map((ing, idx) => `
@@ -334,11 +482,9 @@ const UIController = {
           <label for="ing-${idx}">${ing}</label>
         </li>
       `).join('');
-    } else {
-      ingredientsList.innerHTML = `<li>No hay ingredientes listados.</li>`;
     }
 
-    // Pasos de preparación numerados
+    // Pasos
     const stepsList = document.getElementById('modalStepsList');
     if (recipe.instructions && recipe.instructions.length > 0) {
       stepsList.innerHTML = recipe.instructions.map((step, idx) => `
@@ -347,11 +493,8 @@ const UIController = {
           <div class="step-text">${step}</div>
         </li>
       `).join('');
-    } else {
-      stepsList.innerHTML = `<li>No hay pasos listados.</li>`;
     }
 
-    // Abrir overlay
     const overlay = document.getElementById('recipeModalOverlay');
     overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -363,23 +506,19 @@ const UIController = {
     document.body.style.overflow = '';
   },
 
-  /**
-   * Vista de Favoritos
-   */
   renderFavoritesList() {
     const container = document.getElementById('favoritesGrid');
     if (!container) return;
 
     const favIds = StorageService.getFavorites();
-    const allRecipes = StorageService.getAllRecipes();
-    const favRecipes = allRecipes.filter(r => favIds.includes(r.id));
+    const favRecipes = this.currentFeed.filter(r => favIds.includes(r.id));
 
     if (favRecipes.length === 0) {
       container.innerHTML = `
         <div class="empty-state">
           <div class="empty-state-icon">❤️</div>
           <h3>Aún no tienes recetas favoritas</h3>
-          <p>Toca el corazón en cualquier platillo del recetario para tenerlo a la mano aquí sin necesidad de internet ni cuenta.</p>
+          <p>Toca el corazón en cualquier platillo del recetario para tenerlo a la mano aquí sin conexión.</p>
         </div>
       `;
       return;
@@ -389,12 +528,12 @@ const UIController = {
 
     container.querySelectorAll('.recipe-card').forEach(card => {
       card.addEventListener('click', (e) => {
-        if (e.target.closest('.recipe-favorite-btn')) return;
+        if (e.target.closest('.recipe-img-fav-btn')) return;
         this.openRecipeDetail(card.dataset.id);
       });
     });
 
-    container.querySelectorAll('.recipe-favorite-btn').forEach(btn => {
+    container.querySelectorAll('.recipe-img-fav-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         StorageService.toggleFavorite(btn.dataset.id);
@@ -403,9 +542,6 @@ const UIController = {
     });
   },
 
-  /**
-   * Ruleta Anti-Aburrimiento ("¿Qué cocino hoy?" & Menú de la Semana)
-   */
   renderRoulette() {
     const rouletteResult = document.getElementById('rouletteResult');
     const spinBtn = document.getElementById('spinRouletteBtn');
@@ -413,13 +549,11 @@ const UIController = {
 
     if (spinBtn) {
       spinBtn.onclick = () => {
-        const allRecipes = StorageService.getAllRecipes();
-        let pool = this.vesiculaOnly ? allRecipes.filter(r => r.vesiculaFriendly === true) : allRecipes;
-        if (pool.length === 0) pool = allRecipes;
+        let pool = this.vesiculaOnly ? this.currentFeed.filter(r => r.vesiculaFriendly === true) : this.currentFeed;
+        if (pool.length === 0) pool = this.currentFeed;
 
-        // Efecto visual de sorteo
         spinBtn.disabled = true;
-        spinBtn.textContent = '🎲 Seleccionando receta deliciosa...';
+        spinBtn.textContent = '🎲 Seleccionando platillo...';
 
         let count = 0;
         const interval = setInterval(() => {
@@ -450,9 +584,7 @@ const UIController = {
     }
 
     if (generateWeekBtn) {
-      generateWeekBtn.onclick = () => {
-        this.generateWeeklyPlan();
-      };
+      generateWeekBtn.onclick = () => this.generateWeeklyPlan();
     }
 
     this.displayWeeklyPlan();
@@ -469,10 +601,7 @@ const UIController = {
       { id: 'domingo', name: 'Domingo' }
     ];
 
-    const all = StorageService.getAllRecipes();
-    const pool = this.vesiculaOnly ? all.filter(r => r.vesiculaFriendly === true) : all;
-    
-    // Barajar aleatoriamente para evitar repeticiones
+    const pool = this.vesiculaOnly ? this.currentFeed.filter(r => r.vesiculaFriendly === true) : this.currentFeed;
     const shuffled = [...pool].sort(() => 0.5 - Math.random());
     const plan = {};
 
@@ -512,10 +641,34 @@ const UIController = {
       return `
         <div class="day-plan-card" style="cursor: pointer;" onclick="UIController.openRecipeDetail('${rec.id}')">
           <span class="day-name">${d.name}</span>
-          <span class="day-recipe-name">${rec.emoji || '🥘'} ${rec.name}</span>
+          <span class="day-recipe-name">${rec.name}</span>
           <span class="hw-badge hw-badge-neutral" style="font-size: 0.65rem;">${rec.mealType}</span>
         </div>
       `;
     }).join('');
+  },
+
+  // ==========================================
+  // MODAL DE ENCUESTA INICIAL (ONBOARDING)
+  // ==========================================
+  openSurveyModal() {
+    const modal = document.getElementById('surveyModalOverlay');
+    if (modal) {
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+  },
+
+  closeSurveyModal() {
+    const modal = document.getElementById('surveyModalOverlay');
+    if (modal) {
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
   }
 };
+
+// Exportar global
+if (typeof window !== 'undefined') {
+  window.UIController = UIController;
+}

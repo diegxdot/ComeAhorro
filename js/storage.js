@@ -1,28 +1,87 @@
 /**
  * ComeAhorro - Almacenamiento Local (Sin Base de Datos, 100% Privado)
- * Maneja favoritos, recetas personalizadas, importaciones web y preferencias.
+ * Maneja favoritos, recetas personalizadas, perfil del usuario (encuesta),
+ * caché de feed dinámico y preferencias.
  */
 
 const STORAGE_KEYS = {
+  USER_PROFILE: 'comeahorro_user_profile',
   FAVORITES: 'comeahorro_favorites',
   CUSTOM_RECIPES: 'comeahorro_custom_recipes',
+  FEED_RECIPES: 'comeahorro_feed_recipes',
   WEEKLY_PLAN: 'comeahorro_weekly_plan',
   SETTINGS: 'comeahorro_settings'
 };
 
 const StorageService = {
-  // Configuración predeterminada
+  // ==========================================
+  // PERFIL DEL USUARIO (ENCUESTA INICIAL)
+  // ==========================================
+  getUserProfile() {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.USER_PROFILE);
+      return data ? JSON.parse(data) : null;
+    } catch (e) {
+      console.error("Error reading user profile", e);
+      return null;
+    }
+  },
+
+  hasCompletedSurvey() {
+    return this.getUserProfile() !== null;
+  },
+
+  saveUserProfile(profile) {
+    try {
+      localStorage.setItem(STORAGE_KEYS.USER_PROFILE, JSON.stringify(profile));
+    } catch (e) {
+      console.error("Error saving user profile", e);
+    }
+  },
+
+  resetUserProfile() {
+    try {
+      localStorage.removeItem(STORAGE_KEYS.USER_PROFILE);
+      localStorage.removeItem(STORAGE_KEYS.FEED_RECIPES);
+    } catch (e) {
+      console.error("Error resetting profile", e);
+    }
+  },
+
+  // ==========================================
+  // CACHÉ DEL FEED DINÁMICO
+  // ==========================================
+  getFeedRecipes() {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.FEED_RECIPES);
+      return data ? JSON.parse(data) : null;
+    } catch (e) {
+      return null;
+    }
+  },
+
+  saveFeedRecipes(recipes) {
+    try {
+      // Guardar hasta 60 recetas en el feed activo para rendimiento óptimo
+      const toSave = recipes.slice(0, 60);
+      localStorage.setItem(STORAGE_KEYS.FEED_RECIPES, JSON.stringify(toSave));
+    } catch (e) {
+      console.error("Error saving feed recipes", e);
+    }
+  },
+
+  // ==========================================
+  // CONFIGURACIONES
+  // ==========================================
   getSettings() {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
       return data ? JSON.parse(data) : {
-        vesiculaOnly: false,
         theme: 'auto',
         showTips: true
       };
     } catch (e) {
-      console.error("Error reading settings", e);
-      return { vesiculaOnly: false, theme: 'auto', showTips: true };
+      return { theme: 'auto', showTips: true };
     }
   },
 
@@ -34,7 +93,9 @@ const StorageService = {
     }
   },
 
-  // Favoritos
+  // ==========================================
+  // FAVORITOS
+  // ==========================================
   getFavorites() {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.FAVORITES);
@@ -64,7 +125,9 @@ const StorageService = {
     return favs.includes(recipeId);
   },
 
-  // Recetas personalizadas / importadas de la web
+  // ==========================================
+  // RECETAS PERSONALIZADAS / WEB
+  // ==========================================
   getCustomRecipes() {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.CUSTOM_RECIPES);
@@ -76,7 +139,6 @@ const StorageService = {
 
   saveCustomRecipe(recipe) {
     const custom = this.getCustomRecipes();
-    // Si ya existe por ID, actualizar
     const index = custom.findIndex(r => r.id === recipe.id);
     if (index >= 0) {
       custom[index] = recipe;
@@ -101,30 +163,13 @@ const StorageService = {
     }
   },
 
-  // Obtener todas las recetas (catálogo base + personalizadas)
-  getAllRecipes() {
-    const custom = this.getCustomRecipes();
-    return [...custom, ...RECIPES_DATA];
-  },
-
-  getRecipeById(id) {
-    const all = this.getAllRecipes();
-    return all.find(r => r.id === id) || null;
-  },
-
-  // Planificador semanal anti-aburrimiento
+  // ==========================================
+  // PLANIFICADOR SEMANAL
+  // ==========================================
   getWeeklyPlan() {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.WEEKLY_PLAN);
-      return data ? JSON.parse(data) : {
-        lunes: null,
-        martes: null,
-        miercoles: null,
-        jueves: null,
-        viernes: null,
-        sabado: null,
-        domingo: null
-      };
+      return data ? JSON.parse(data) : {};
     } catch (e) {
       return {};
     }
@@ -136,32 +181,11 @@ const StorageService = {
     } catch (e) {
       console.error("Error saving weekly plan", e);
     }
-  },
-
-  // Exportar / Importar datos en JSON para respaldo
-  exportBackup() {
-    const backup = {
-      favorites: this.getFavorites(),
-      customRecipes: this.getCustomRecipes(),
-      weeklyPlan: this.getWeeklyPlan(),
-      settings: this.getSettings(),
-      exportDate: new Date().toISOString(),
-      appVersion: "1.0.0"
-    };
-    return JSON.stringify(backup, null, 2);
-  },
-
-  importBackup(jsonString) {
-    try {
-      const parsed = JSON.parse(jsonString);
-      if (parsed.favorites) localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(parsed.favorites));
-      if (parsed.customRecipes) localStorage.setItem(STORAGE_KEYS.CUSTOM_RECIPES, JSON.stringify(parsed.customRecipes));
-      if (parsed.weeklyPlan) localStorage.setItem(STORAGE_KEYS.WEEKLY_PLAN, JSON.stringify(parsed.weeklyPlan));
-      if (parsed.settings) localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(parsed.settings));
-      return true;
-    } catch (e) {
-      console.error("Error importing backup", e);
-      return false;
-    }
   }
 };
+
+if (typeof window !== 'undefined') {
+  window.StorageService = StorageService;
+} else if (typeof global !== 'undefined') {
+  global.StorageService = StorageService;
+}

@@ -1,9 +1,17 @@
 /**
  * ComeAhorro - Entrada Principal de la PWA
- * Inicialización, registro de Service Worker y manejo de eventos globales.
+ * Inicialización, Service Worker, y lógica del asistente de encuesta (Onboarding).
  */
 
 let deferredInstallPrompt = null;
+
+// Respuestas temporales de la encuesta
+let currentSurveyState = {
+  proteins: ['pollo', 'pescado'],
+  veggies: ['nopal', 'calabacita', 'frijol'],
+  methods: ['comal', 'vapor', 'caldillo'],
+  healthCondition: 'vesicula' // 'vesicula', 'gastro', 'ninguno'
+};
 
 document.addEventListener('DOMContentLoaded', () => {
   // 1. Poblar selector de regiones
@@ -12,13 +20,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // 2. Inicializar controlador de interfaz
   UIController.init();
 
-  // 3. Inicializar módulo de interpretación web
+  // 3. Inicializar lógica de la encuesta (Onboarding Wizard)
+  initSurveyWizard();
+
+  // 4. Inicializar módulo de interpretación web
   initWebParserView();
 
-  // 4. Registrar Service Worker para soporte offline
+  // 5. Registrar Service Worker para soporte offline
   registerServiceWorker();
 
-  // 5. Manejar evento de instalación PWA en Huawei / Android
+  // 6. Manejar evento de instalación PWA en Huawei / Android
   initPWAInstall();
 });
 
@@ -35,6 +46,98 @@ function populateRegions() {
 }
 
 /**
+ * Asistente de encuesta inicial de gustos y salud gastrointestinal
+ */
+function initSurveyWizard() {
+  let currentStep = 1;
+  const totalSteps = 4;
+
+  const btnNext = document.getElementById('btnSurveyNext');
+  const btnPrev = document.getElementById('btnSurveyPrev');
+  const stepIndicator = document.getElementById('surveyStepIndicator');
+
+  // Selección de opciones tipo toggle múltiple o simple
+  document.querySelectorAll('.survey-choice-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const group = btn.dataset.group;
+      const val = btn.dataset.val;
+
+      if (group === 'health') {
+        // Opción única para salud
+        document.querySelectorAll(`.survey-choice-btn[data-group="health"]`).forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        currentSurveyState.healthCondition = val;
+      } else {
+        // Opción múltiple
+        btn.classList.toggle('selected');
+        const isSelected = btn.classList.contains('selected');
+
+        if (group === 'protein') {
+          if (isSelected) {
+            if (!currentSurveyState.proteins.includes(val)) currentSurveyState.proteins.push(val);
+          } else {
+            currentSurveyState.proteins = currentSurveyState.proteins.filter(p => p !== val);
+          }
+        } else if (group === 'veggie') {
+          if (isSelected) {
+            if (!currentSurveyState.veggies.includes(val)) currentSurveyState.veggies.push(val);
+          } else {
+            currentSurveyState.veggies = currentSurveyState.veggies.filter(v => v !== val);
+          }
+        } else if (group === 'method') {
+          if (isSelected) {
+            if (!currentSurveyState.methods.includes(val)) currentSurveyState.methods.push(val);
+          } else {
+            currentSurveyState.methods = currentSurveyState.methods.filter(m => m !== val);
+          }
+        }
+      }
+    });
+  });
+
+  if (btnNext) {
+    btnNext.addEventListener('click', () => {
+      if (currentStep < totalSteps) {
+        currentStep++;
+        updateSurveyStepView(currentStep, totalSteps);
+      } else {
+        // Finalizar encuesta y guardar en caché local
+        StorageService.saveUserProfile(currentSurveyState);
+        UIController.applyUserProfile(currentSurveyState);
+        UIController.closeSurveyModal();
+        UIController.refreshFeed(false);
+      }
+    });
+  }
+
+  if (btnPrev) {
+    btnPrev.addEventListener('click', () => {
+      if (currentStep > 1) {
+        currentStep--;
+        updateSurveyStepView(currentStep, totalSteps);
+      }
+    });
+  }
+}
+
+function updateSurveyStepView(step, total) {
+  document.querySelectorAll('.survey-step').forEach(el => el.classList.remove('active'));
+  const activeStepEl = document.getElementById(`surveyStep${step}`);
+  if (activeStepEl) activeStepEl.classList.add('active');
+
+  const indicator = document.getElementById('surveyStepIndicator');
+  if (indicator) indicator.textContent = `Paso ${step} de ${total}`;
+
+  const btnPrev = document.getElementById('btnSurveyPrev');
+  if (btnPrev) btnPrev.style.display = step > 1 ? 'inline-flex' : 'none';
+
+  const btnNext = document.getElementById('btnSurveyNext');
+  if (btnNext) {
+    btnNext.textContent = step === total ? '✨ Ver Mi Feed de Comidas' : 'Siguiente →';
+  }
+}
+
+/**
  * Registra el Service Worker de la PWA
  */
 function registerServiceWorker() {
@@ -42,7 +145,7 @@ function registerServiceWorker() {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js')
         .then((reg) => {
-          console.log('[ComeAhorro PWA] Service Worker registrado con éxito:', reg.scope);
+          console.log('[ComeAhorro PWA] Service Worker registrado:', reg.scope);
         })
         .catch((err) => {
           console.warn('[ComeAhorro PWA] No se pudo registrar Service Worker:', err);
@@ -52,7 +155,7 @@ function registerServiceWorker() {
 }
 
 /**
- * Control del banner de instalación en dispositivos móviles Huawei / Android
+ * Banner de instalación para Huawei / Android
  */
 function initPWAInstall() {
   const banner = document.getElementById('pwaInstallBanner');
@@ -60,21 +163,16 @@ function initPWAInstall() {
   const dismissBtn = document.getElementById('btnDismissPwa');
 
   window.addEventListener('beforeinstallprompt', (e) => {
-    // Prevenir el banner automático del navegador para mostrar el estilo HarmonyOS
     e.preventDefault();
     deferredInstallPrompt = e;
-
-    if (banner) {
-      banner.classList.add('visible');
-    }
+    if (banner) banner.classList.add('visible');
   });
 
   if (installBtn) {
     installBtn.addEventListener('click', async () => {
       if (!deferredInstallPrompt) return;
       deferredInstallPrompt.prompt();
-      const choiceResult = await deferredInstallPrompt.userChoice;
-      console.log('[PWA] Elección del usuario:', choiceResult.outcome);
+      await deferredInstallPrompt.userChoice;
       deferredInstallPrompt = null;
       if (banner) banner.classList.remove('visible');
     });
@@ -101,7 +199,7 @@ function initWebParserView() {
     parseBtn.addEventListener('click', () => {
       const text = webTextInput.value.trim();
       if (!text) {
-        alert('Por favor pega el texto de alguna receta que hayas visto en internet o redes sociales.');
+        alert('Por favor pega el texto de alguna receta que hayas visto en internet o redes.');
         return;
       }
 
@@ -115,7 +213,6 @@ function initWebParserView() {
     });
   }
 
-  // Ejemplo 1: Receta con factores de riesgo para vesícula
   if (exampleRiskBtn && webTextInput) {
     exampleRiskBtn.addEventListener('click', () => {
       webTextInput.value = `Chicharrón en Salsa Verde Frita
@@ -136,7 +233,6 @@ Preparación:
     });
   }
 
-  // Ejemplo 2: Receta saludable para vesícula
   if (exampleHealthyBtn && webTextInput) {
     exampleHealthyBtn.addEventListener('click', () => {
       webTextInput.value = `Pechuga a la Plancha con Nopales Asados al Comal
@@ -148,36 +244,38 @@ Ingredientes:
 - Gotas de limón y sal marina
 
 Preparación:
-1. Limpiar la pechuga de cualquier rastro de grasa visible.
-2. Sazonar con ajo picado, orégano y una pizca de sal.
-3. Calentar el comal a fuego medio sin agregar aceite ni manteca.
-4. Asar los nopales al comal durante 4 minutos por lado hasta que cambien de color.
-5. Cocinar la pechuga en el comal bien caliente hasta que esté doradita y jugosa.
+1. Limpiar la pechuga de grasa visible.
+2. Sazonar con ajo picado, orégano y sal.
+3. Calentar el comal a fuego medio sin grasa ni manteca.
+4. Asar los nopales 4 minutos por lado hasta que cambien de color.
+5. Asar la pechuga en el comal bien caliente hasta que esté doradita y jugosa.
 6. Servir con rebanadas de jitomate fresco y limón.`;
     });
   }
 }
 
-/**
- * Despliega la receta evaluada y permite guardarla localmente en el recetario
- */
 function displayParsedResult(recipe, container) {
   if (!container) return;
+
+  const profile = StorageService.getUserProfile();
+  const showHealth = !profile || (profile.healthCondition === 'vesicula' || profile.healthCondition === 'gastro');
 
   let riskBadge = '';
   let riskClass = 'vesicula-banner-green';
   let bannerIcon = '🌱';
 
-  if (recipe.vesiculaFriendly === false) {
-    riskBadge = `<span class="hw-badge hw-badge-danger">⚠️ Alto en grasa saturada</span>`;
-    riskClass = 'vesicula-banner-red';
-    bannerIcon = '🛑';
-  } else if (recipe.vesiculaFriendly === 'adaptable') {
-    riskBadge = `<span class="hw-badge hw-badge-warning">⚡ Precaución / Adaptable</span>`;
-    riskClass = 'vesicula-banner-yellow';
-    bannerIcon = '⚡';
-  } else {
-    riskBadge = `<span class="hw-badge hw-badge-health">✅ Seguro para Vesícula</span>`;
+  if (showHealth) {
+    if (recipe.vesiculaFriendly === false) {
+      riskBadge = `<span class="hw-badge hw-badge-danger">⚠️ Alto en grasa saturada</span>`;
+      riskClass = 'vesicula-banner-red';
+      bannerIcon = '🛑';
+    } else if (recipe.vesiculaFriendly === 'adaptable') {
+      riskBadge = `<span class="hw-badge hw-badge-warning">⚡ Precaución / Adaptable</span>`;
+      riskClass = 'vesicula-banner-yellow';
+      bannerIcon = '⚡';
+    } else {
+      riskBadge = `<span class="hw-badge hw-badge-health">✅ Seguro para Vesícula</span>`;
+    }
   }
 
   container.innerHTML = `
@@ -191,17 +289,19 @@ function displayParsedResult(recipe, container) {
         ${recipe.name}
       </h3>
 
-      <div class="vesicula-medical-banner ${riskClass}" style="margin: 12px 0;">
-        <div class="vesicula-banner-icon">${bannerIcon}</div>
-        <div class="vesicula-banner-content">
-          <h4>Evaluación Vesicular: ${recipe.vesiculaStatus}</h4>
-          <p>${recipe.vesiculaTips}</p>
+      ${showHealth ? `
+        <div class="vesicula-medical-banner ${riskClass}" style="margin: 12px 0;">
+          <div class="vesicula-banner-icon">${bannerIcon}</div>
+          <div class="vesicula-banner-content">
+            <h4>Evaluación Digestiva: ${recipe.vesiculaStatus}</h4>
+            <p>${recipe.vesiculaTips}</p>
+          </div>
         </div>
-      </div>
+      ` : ''}
 
       <div class="recipe-metrics-grid" style="margin-bottom: 14px;">
         <div class="metric-item">
-          <span class="metric-label">❄️ Caducidad Estimada</span>
+          <span class="metric-label">❄️ Caducidad Refri</span>
           <span class="metric-value">${recipe.fridgeLife}</span>
         </div>
         <div class="metric-item">
@@ -225,7 +325,7 @@ function displayParsedResult(recipe, container) {
       </div>
 
       <button id="btnSaveImportedRecipe" class="hw-btn hw-btn-health" style="width: 100%;">
-        💾 Guardar en Mi Recetario (Sin base de datos)
+        💾 Guardar en Mi Recetario
       </button>
     </div>
   `;
@@ -237,8 +337,9 @@ function displayParsedResult(recipe, container) {
       saveBtn.disabled = true;
       saveBtn.textContent = '✅ ¡Guardada con éxito en tu recetario local!';
       setTimeout(() => {
+        UIController.initFeed();
         UIController.switchTab('recetario');
-      }, 1200);
+      }, 1000);
     });
   }
 }
